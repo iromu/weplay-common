@@ -1,0 +1,14 @@
+{
+  "name": "weplay-common",
+  "version": "0.0.1",
+  "description": "",
+  "dependencies": {
+    "debug": "^2.2.0",
+    "redis": "^2.6.2",
+    "winston": "^2.3.0",
+    "winston-logstash": "^0.3.0"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  }
+}
