@@ -5,6 +5,7 @@ const uri = process.env.WEPLAY_LOGSTASH_URI || 'localhost:5001';
 const pieces = uri.split(':');
 const host = pieces[0];
 const port = pieces[1] || 5001;
+const env = process.env.NODE_ENV || 'development';
 
 module.exports = (label) => {
     var logger = new winston.Logger({
@@ -12,7 +13,9 @@ module.exports = (label) => {
             new winston.transports.Console({
                 handleExceptions: true,
                 timestamp: true,
-                json: false
+                json: false,
+                colorize: true,
+                level: env === 'development' ? 'debug' : 'info'
             }),
             new (winston.transports.Logstash)({
                 port: port,
