@@ -1,11 +1,6 @@
-'use strict';
-
-const logger = require('./logger')('weplay-common');
-
 var redis = require('redis');
 
 const uri = process.env.WEPLAY_REDIS_URI || 'localhost:6379';
-logger.info('WEPLAY_REDIS_URI', uri);
 
 const pieces = uri.split(':');
 const host = pieces[0];
@@ -15,7 +10,7 @@ module.exports = () => {
 
     const redisClient = redis.createClient(port, host, {return_buffers: true});
     redisClient.on('connect', () => {
-        logger.info('Redis connected to', {host: host, port: port});
+        // console.log('Redis connected to', {host: host, port: port});
     });
     redisClient.on('error', err => {
         console.error('Redis error ', err);
