@@ -7,7 +7,7 @@ const host = pieces[0];
 const port = pieces[1] || 5001;
 const env = process.env.NODE_ENV || 'development';
 
-module.exports = (label) => {
+module.exports = (label, node_name) => {
     var logger = new winston.Logger({
         transports: [
             new winston.transports.Console({
@@ -23,7 +23,8 @@ module.exports = (label) => {
                 host: host,
                 max_connect_retries: -1,
                 label: label,
-                level: env === 'development' ? 'debug' : 'info'
+                level: env === 'development' ? 'debug' : 'info',
+                node_name: node_name || process.title
             })
         ],
         exitOnError: false

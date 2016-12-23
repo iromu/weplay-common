@@ -1,8 +1,15 @@
 class EventBus {
 
     constructor(_publish, _subscriptor) {
-        this._publish = _publish;
-        this._subscriptor = _subscriptor;
+        if (!_publish && !_subscriptor) {
+            this._publish = require('./redis');
+            this._subscriptor = require('./redis');
+        }
+        else {
+            this._publish = _publish;
+            this._subscriptor = _subscriptor;
+        }
+
         this.subscriptions = [];
         this.psubscriptions = [];
     }
@@ -27,9 +34,14 @@ class EventBus {
         this.psubscriptions.push(channel);
         this._subscriptor.psubscribe(channel);
         this._subscriptor.on('pmessage', (...args) => {
-            var _channel = args[1];
-            if (channel != _channel) return;
-            callback.apply(null, args);
+            var _channel = args[1].toString();
+            if (channel.slice(-1) === '*') {
+                const prefix = channel.slice(0, channel.length - 1);
+                if (!_channel.startsWith(prefix)) return;
+                callback.apply(null, args);
+            } else {
+                console.error('psubscribe', channel);
+            }
         });
     }
 
