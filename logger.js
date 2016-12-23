@@ -22,7 +22,8 @@ module.exports = (label) => {
                 ssl_enable: false,
                 host: host,
                 max_connect_retries: -1,
-                label: label
+                label: label,
+                level: env === 'development' ? 'debug' : 'info'
             })
         ],
         exitOnError: false
