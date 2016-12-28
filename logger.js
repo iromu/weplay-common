@@ -24,6 +24,7 @@ module.exports = (label, node_name) => {
                 max_connect_retries: -1,
                 label: label,
                 level: env === 'development' ? 'debug' : 'info',
+                meta: {node: node_name || `${label}-${process.pid}`},
                 node_name: node_name || process.title
             })
         ],

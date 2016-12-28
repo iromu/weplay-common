@@ -10,7 +10,7 @@ module.exports = () => {
 
     const redisClient = redis.createClient(port, host, {return_buffers: true});
     redisClient.on('connect', () => {
-        // console.log('Redis connected to', {host: host, port: port});
+        console.log('Redis connected to', {host: host, port: port});
     });
     redisClient.on('error', err => {
         console.error('Redis error ', err);
