@@ -1,7 +1,9 @@
 // Object to capture process exits and call app specific cleanup function
 
 function noOp() {
-};
+    "use strict";
+    //noop
+}
 
 module.exports = (callback) => {
 
