@@ -1,5 +1,5 @@
-const Discovery = require('./Discovery');
-const EventBroker = require('./EventBroker');
+const Discovery = require('./discovery');
+const EventBroker = require('./eventbroker');
 
 class EventBus {
 
