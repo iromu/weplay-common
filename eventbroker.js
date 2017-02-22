@@ -4,7 +4,7 @@ class EventBroker {
 
     constructor(discoveryClient, clientListeners) {
         this.subscriptions = {};
-        this.services = [];
+        this._services = [];
         this.queue = {};
 
         this.discoveryClient = discoveryClient;
@@ -71,7 +71,7 @@ class EventBroker {
         });
 
 
-        this.services.push(service);
+        this._services.push(service);
 
         if (this.queue[service.name]) {
             this.queue[service.name].emit.forEach(command=> {
@@ -86,7 +86,7 @@ class EventBroker {
     }
 
     getService(serviceName) {
-        var service = this.services.filter(service=>service.name === serviceName)[0];
+        var service = this._services.filter(service=>service.name === serviceName)[0];
         if (!service && !this.queue[serviceName]) {
             this.queue[serviceName] = {emit: [], on: []};
             this.discoveryClient.emit('discover', serviceName);

@@ -24,7 +24,7 @@ class Server {
     constructor(port, listeners, cb) {
         var sio = require('socket.io');
         this.io = sio();
-        this.services = [];
+        this._services = [];
         this.listeners = listeners;
         this.io.on('connection', socket => {
 
@@ -42,10 +42,10 @@ class Server {
             }
             socket.on('disconnect', ()=> {
                 logger.debug('x disconnect', service);
-                this.services = this.services.filter(s=>s.id !== service.id);
+                this._services = this._services.filter(s=>s.id !== service.id);
             });
 
-            socket.on('register', _service => {
+            const onRegister = _service => {
                 service = {
                     name: _service.name,
                     id: _service.id,
@@ -54,12 +54,39 @@ class Server {
                     port: _service.port
                 };
                 logger.debug('< register', service);
-                this.services.push(service);
-            });
+                this._services.push(service);
+            };
 
-            socket.on('discover', serviceName => {
+            socket.on('register', onRegister);
+
+            const onAnnounce = _service => {
+                var eventData = {
+                    name: _service.name,
+                    id: _service.id,
+                    ip: ip,
+                    scheme: 'http',
+                    port: _service.port,
+                    event: _service.event
+                };
+                logger.debug('< announce', eventData);
+
+                var discovered = this._services.filter(service=>service.id === _service.id)[0];
+                if (!discovered) {
+                    logger.debug('< adding missing register', eventData);
+                    onRegister(_service);
+                }
+
+                if (!discovered.events) {
+                    discovered.events = [];
+                }
+                discovered.events.push(eventData);
+            };
+
+            socket.on('announce', onAnnounce);
+
+            const onDiscover = serviceName => {
                 logger.debug('< discover', {requested: serviceName, by: service.name, id: service.id});
-                const discovered = this.services.filter(service=>service.name === serviceName)[0];
+                const discovered = this._services.filter(service=>service.name === serviceName)[0];
                 if (discovered) {
                     logger.debug('> service', discovered);
                     socket.emit('service', {
@@ -70,7 +97,8 @@ class Server {
                         port: discovered.port
                     });
                 }
-            });
+            };
+            socket.on('discover', onDiscover);
         });
         this.io.listen(port);
         if (cb) {
@@ -87,6 +115,15 @@ class Server {
 
     to(room) {
         return this.io.to(room);
+    }
+
+    lookup(options) {
+        if (options) {
+            return this._services;
+        }
+        else {
+            return this._services;
+        }
     }
 
     destroy() {
@@ -113,6 +150,16 @@ class Client {
                 logger.debug('> discovery client registering', logInfo);
             }
             this.socket.emit('register', {name: options.name, id: options.id, port: options.port});
+            for (var event in options.serverListeners) {
+                if (options.serverListeners.hasOwnProperty(event)) {
+                    this.socket.emit('announce', {
+                        name: options.name,
+                        id: options.id,
+                        port: options.port,
+                        event: event
+                    });
+                }
+            }
             if (_onConnect) {
                 _onConnect();
             }
