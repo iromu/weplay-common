@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 'use strict'
 
-require('./common')
+require('./common.spec')
 
 process.env.NODE_ENV = 'test'
 
@@ -101,9 +101,15 @@ describe('Discovery', () => {
   })
 
   describe('onStreaming', () => {
+
     var channel = 'emitter'
     var room = 'room1'
     var event = 'event1'
+    beforeEach(() => {
+      channel = 'emitter'
+      room = 'room1'
+      event = 'event1'
+    })
     it('should announce stream events', (done) => {
       var emitter
       var expectedEvents = [{event: 'streamJoinRequested', room: room}, {event: event, room: room}]
@@ -132,7 +138,6 @@ describe('Discovery', () => {
 
     it('should handshake an stream with default handler', (done) => {
       var emitter
-
       var checkTest = (data) => {
         expect(data).to.be.equal('data R')
         done()
@@ -154,7 +159,6 @@ describe('Discovery', () => {
 
     it('should handshake an stream with custom handler', (done) => {
       var emitter
-
       var checkTest = (data) => {
         expect(data).to.be.equal('data Custom')
         done()
@@ -180,32 +184,166 @@ describe('Discovery', () => {
     })
 
     it('should start an stream when requested', (done) => {
-      var checkTest = (data) => {
-        console.log(data)
+      channel = 'emitter2'
+      room = 'room2'
+      event = 'event2'
+      var onWorkerStreamJoined = (data) => {
         expect(data).to.be.equal('data J')
         done()
       }
       var emitter = busFactory({
-        name: 'emitter',
+        name: channel,
         id: 'emitter',
         serverListeners: {
           'streamJoinRequested': (socket, request) => {
-            console.log('data J DiscoveryServer.streamCreateRequested', this.name, request)
             socket.join(request)
             emitter.stream(request, event, 'data J')
           },
           'streamCreateRequested': (socket, request) => {
-            console.log('data C DiscoveryServer.streamCreateRequested', this.name, request)
             socket.join(request)
             emitter.stream(request, event, 'data C')
           }
         }
       }, () => {
         var worker = busFactory({name: 'worker', id: 'worker'}, () => {
+          worker.streamJoin(channel, room, event, onWorkerStreamJoined)
+        })
+      })
+    })
+
+    it('should start an stream when requested and echo any event sent', (done) => {
+      channel = 'emitterEcho'
+      room = 'roomEcho'
+      event = 'echo'
+      var worker
+      var onWorkerStreamJoined = (data) => {
+        console.log('Check incoming message from Emitter', data)
+        if (data === 'J') {
+          // Send message to emitter through room
+          worker.emit({channel: channel, room: room, event: event, data: 'Hello'})
+        } else if (data === 'Hello') {
+          done()
+        }
+      }
+
+      // Prepare emitter listeners
+      var emitter = busFactory({
+        name: channel,
+        id: 'emitter',
+        serverListeners: {
+          'echo': (socket, request) => {
+            console.log('echo Request', socket.id)
+            emitter.stream(room, event, request)
+          },
+          'streamJoinRequested': (socket, request) => {
+            console.log('Stream Join Request', request)
+            socket.join(request)
+            //  this.server.to(room).emit(event, data)
+            emitter.stream(request, event, 'J')
+          },
+          'streamCreateRequested': (socket, request) => {
+            console.log('Stream Init Request', request)
+            socket.join(request)
+            emitter.stream(request, event, 'C')
+          }
+        }
+      }, () => {
+        console.log('Init Emitter')
+        worker = busFactory({
+          name: 'worker',
+          id: 'worker'
+        }, () => {
+          console.log('Worker joining stream', {channel: channel, room: room, event: event})
+          // Request Stream creation and join
+          worker.streamJoin(channel, room, event, onWorkerStreamJoined)
+        })
+      })
+    })
+
+    it('should reconnect an stream when emitter goes online again', (done) => {
+      var emitter
+      var worker
+      var emitterIsReconnecting
+      var checkTest = (data) => {
+        console.log(data)
+        expect(data).to.be.equal('data J')
+        if (emitterIsReconnecting) {
+          done()
+        }
+        emitterIsReconnecting = true
+        emitter.destroy()
+        emitter = busFactory(emitterConfig, () => {
+          emitter.stream(room, event, 'data J2')
+        })
+        emitter.stream(room, event, 'data J2')
+      }
+      var emitterConfig = {
+        name: 'emitter',
+        id: 'emitter',
+        serverListeners: {
+          'streamJoinRequested': (socket, request) => {
+            socket.join(request)
+            emitter.stream(request, event, 'data J')
+          },
+          'streamCreateRequested': (socket, request) => {
+            socket.join(request)
+            emitter.stream(request, event, 'data C')
+          }
+        }
+      }
+      emitter = busFactory(emitterConfig, () => {
+        worker = busFactory({
+          name: 'worker',
+          id: 'worker',
+          clientListeners: [
+            {
+              name: channel,
+              event: 'connect',
+              handler: () => {
+                if (emitterIsReconnecting) {
+                  worker.streamJoin(channel, room, event, checkTest)
+                }
+              }
+            },
+            {
+              name: channel,
+              event: 'disconnect',
+              handler: () => {
+                worker.streamLeave(channel, room)
+              }
+            }
+          ]
+        }, () => {
+          emitter.stream(room, event, 'data I')
           worker.streamJoin(channel, room, event, checkTest)
         })
       })
+    })
 
+    it('should start a stream when a emitter connects', (done) => {
+      var checkTest = (data) => {
+        expect(data).to.be.equal('data J')
+        done()
+      }
+      var worker = busFactory({name: 'worker', id: 'worker'}, () => {
+        worker.streamJoin(channel, room, event, checkTest)
+        var emitter = busFactory({
+          name: channel,
+          id: 'emitter',
+          serverListeners: {
+            'streamJoinRequested': (socket, request) => {
+              socket.join(request)
+              emitter.stream(request, event, 'data J')
+            },
+            'streamCreateRequested': (socket, request) => {
+              socket.join(request)
+              emitter.stream(request, event, 'data C')
+            }
+          }
+        }, () => {
+          emitter.stream(room, event, 'data I')
+        })
+      })
     })
   })
 })

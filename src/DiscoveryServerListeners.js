@@ -6,13 +6,14 @@ class DiscoveryServerListeners {
     this.ip = options.ip
     this._socket = options.socket
     this._services = options._services
+    this._eventLog = options._eventLog
     this.io = options.io
     this.onRegisterListener = options.onRegisterListener
     this.onAnnounceListener = options.onAnnounceListener
 
     return {
       'disconnect': () => {
-        logger.debug('[%s] Discovery Server.onDisconnect', this.name, this.service)
+        // logger.debug('[%s] Discovery Server.onDisconnect', this.name, this.service)
         this._services = this._services.filter(s => s.id !== this.service.id)
       },
       'register': _service => {
@@ -28,7 +29,7 @@ class DiscoveryServerListeners {
 
         if (!discovered) {
           this._services.push(this.service)
-          logger.debug('[%s] Discovery Server.onRegister joining notification channel', this.name, this.service.name)
+          // logger.debug('[%s] Discovery Server.onRegister joining notification channel', this.name, this.service.name)
           // Join private room for channel notifications: creation of streams
           this._socket.join(this.service.name)
           this._socket.emit('registered', this.service)
@@ -54,21 +55,21 @@ class DiscoveryServerListeners {
           delete eventData.room
         }
 
-        if (eventData.room) {
-          logger.debug('[%s] Discovery Server.onAnnounce joining notification channel', this.name, this.service.name)
-          logger.debug('service "%s" streaming at room %s for event "%s" on port %s',
-            eventData.name, eventData.room, eventData.event, eventData.port)
-        } else {
-          logger.debug('service "%s" listening for event "%s" on port %s',
-            eventData.name, eventData.event, eventData.port)
-        }
+        // if (eventData.room) {
+        // logger.debug('[%s] Discovery Server.onAnnounce joining notification channel', this.name, this.service.name)
+        // logger.debug('service "%s" streaming at room %s for event "%s" on port %s',
+        //   eventData.name, eventData.room, eventData.event, eventData.port)
+        // } else {
+        // logger.debug('service "%s" listening for event "%s" on port %s',
+        //  eventData.name, eventData.event, eventData.port)
+        // }
         var discovered = this._services.filter(s => s.id === _service.id)[0]
         if (!discovered) {
-          logger.debug('[%s] DiscoveryServer.onAnnounce', this.name, {
-            eventData: eventData,
-            discovered: discovered
-          })
-          // logger.debug('< adding missing register', eventData)
+          // logger.debug('[%s] DiscoveryServer.onAnnounce', this.name, {
+          //  eventData: eventData,
+          //  discovered: discovered
+          // })
+          // // logger.debug('< adding missing register', eventData)
           // onRegister(_service)
           // discovered = this._services.filter(service => this.service.id === _service.id)[0]
         } else {
@@ -92,17 +93,23 @@ class DiscoveryServerListeners {
       },
       'discover': (request) => {
         var requester = this._services.filter(s => s.id === this.service.id)[0]
-        logger.debug('[%s] Discovery Server.onDiscover', this.name, {
+        this._eventLog.push({
           requested: request.channel,
           room: request.room,
           event: request.event,
-          by: JSON.stringify(requester)
+          by: requester.name
+        })
+        logger.info('[%s] DiscoveryServerListeners.onDiscover', this.service.name, {
+          requested: request.channel,
+          room: request.room,
+          event: request.event,
+          by: JSON.stringify(requester.name)
         })
 
         if (!requester.depends) {
           requester.depends = []
         }
-        if (!this.service.depends.includes(request)) {
+        if (!requester.depends.includes(request)) {
           requester.depends.push(request)
         }
         // const discovered = this._services.filter(service=>service.name === request.channel)[0]
@@ -115,7 +122,7 @@ class DiscoveryServerListeners {
         var discovered = this._services.filter(condition)[0]
 
         if (discovered) {
-          logger.debug('> discovered', discovered)
+          // logger.debug('> discovered', discovered)
           this._socket.emit('discovered', {
             id: discovered.id,
             name: discovered.name,
@@ -128,7 +135,7 @@ class DiscoveryServerListeners {
           discovered = this._services.filter(s => s.name === request.channel)[0]
           if (discovered) {
             // request the creation of the stream
-            logger.debug('> discovered', discovered)
+            // logger.debug('> discovered', discovered)
             this._socket.emit('discovered', {
               id: discovered.id,
               name: discovered.name,
@@ -141,17 +148,17 @@ class DiscoveryServerListeners {
           // this.io.emit('streamCreateRequested', request.room)
           // this.io.to(request.channel).emit('streamCreateRequested', request.room)
           this.io.emit('streamCreateRequested', request.room)
-          logger.info('[%s] Discovery Server.onRegister streamCreateRequested notification channel by %s', this.name, this.service.name)
+          // logger.info('[%s] Discovery Server.onRegister streamCreateRequested notification channel by %s', this.name, this.service.name)
           this.io.to(request.channel).emit('streamCreateRequested', request.room)
-          logger.info('[%s] DiscoveryServer.onDiscover sent streamCreateRequested', this.name, request)
+          // logger.info('[%s] DiscoveryServer.onDiscover sent streamCreateRequested', this.name, request)
         }
       },
       'streamCreateRequested': (request) => {
-        logger.info('[%s] DiscoveryServer.streamCreateRequested DEFAULT', this.name, request)
+        // logger.info('[%s] DiscoveryServer.streamCreateRequested DEFAULT', this.name, request)
         this._socket.join(request)
       },
       'streamJoinRequested': (request) => {
-        logger.info('[%s] DiscoveryServer.streamJoinRequested DEFAULT', this.name, request)
+        // logger.info('[%s] DiscoveryServer.streamJoinRequested DEFAULT', this.name, request)
         this._socket.join(request)
       }
     }

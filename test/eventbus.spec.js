@@ -2,7 +2,7 @@
 
 'use strict'
 
-require('./common')
+require('./common.spec')
 
 const EventBus = require('../src/eventbus')
 const Discovery = require('../src/discovery')

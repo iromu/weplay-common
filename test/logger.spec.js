@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-require('./common')
+require('./common.spec')
 const Logger = require('../src/logger')
 const TestString = 'Test String';
 

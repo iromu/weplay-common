@@ -1,5 +1,5 @@
 /* eslint-disable semi,space-before-function-paren,spaced-comment */
-const logger = require('../index').logger('common-discovery')
+// const logger = require('../index').logger('common-discovery')
 const SocketClient = require('socket.io-client')
 let Server = require('./DiscoveryServer')
 
@@ -11,30 +11,30 @@ class Client {
     this.name = options.name
     this.rooms = []
 
-    logger.debug('[%s] DiscoveryClient constructor starting on port %s', options.name, options.port)
+    // logger.debug('[%s] DiscoveryClient constructor starting on port %s', options.name, options.port)
 
-    // logger.debug('Client constructor', {name: options.name, port: options.port});
+    // // logger.debug('Client constructor', {name: options.name, port: options.port});
 
     // Connect to discovery server
     this.socket = SocketClient(options.url)
     options.serverEmbedded = true
     this.server = new Server(options, () => {
-      logger.debug('[%s.%s] DiscoveryClient embedded server listening on port %s', options.name, this.id, options.port)
+      // logger.debug('[%s.%s] DiscoveryClient embedded server listening on port %s', options.name, this.id, options.port)
     })
 
     this.uuid = options.uuid
-    const logInfo = {
-      service: {name: options.name, id: options.id},
-      registry: options.url
-    }
+    // const logInfo = {
+    //   service: {name: options.name, id: options.id},
+    //   registry: options.url
+    // }
     this.socket.on('connect', () => {
       if (this.disconnected) {
-        logger.debug('[%s.%s] DiscoveryClient onConnect after disconnection', options.name, this.id, logInfo)
+        // logger.debug('[%s.%s] DiscoveryClient onConnect after disconnection', options.name, this.id, logInfo)
       } else {
-        logger.debug('[%s.%s] DiscoveryClient onConnect', options.name, this.id, logInfo)
+        // logger.debug('[%s.%s] DiscoveryClient onConnect', options.name, this.id, logInfo)
       }
       this.socket.on('registered', function (data) {
-        logger.info('[%s.%s] DiscoveryClient onRegistered', options.name, this.id, data)
+        // logger.info('[%s.%s] DiscoveryClient onRegistered', options.name, this.id, data)
         if (data.id === this.id) {
           this.registered = true
         }
@@ -52,7 +52,7 @@ class Client {
     })
 
     this.socket.on('disconnect', () => {
-      logger.debug('x disconnected from Discovery', options.url)
+      // logger.debug('x disconnected from Discovery', options.url)
       this.disconnected = true
     })
 
@@ -75,7 +75,7 @@ class Client {
   }
 
   subscribe(event, listener) {
-    logger.debug('+ discovery client subscribe()', {event: event})
+    // logger.debug('+ discovery client subscribe()', {event: event})
     this.socket.on(event, function (data) {
       listener(data)
     })
@@ -85,13 +85,13 @@ class Client {
     this.socket.emit.apply(this.socket, args)
   }
 
-  // Creates a private stream of events
+  // Creates/Emit a private stream of events
   publish(room, event, data) {
     if (!this.rooms.includes(room)) {
-      logger.debug('+ discovery client publish()', {room: room, event: event})
+      // logger.debug('+ discovery client publish()', {room: room, event: event})
       this.rooms.push(room)
 
-      logger.debug('+ discovery client Notify Discovery service on publish()', {room: room, event: event})
+      // logger.debug('+ discovery client Notify Discovery service on publish()', {room: room, event: event})
 
       // Notify Discovery service that we support joining to streams at this channel
       this.socket.emit('announce', {

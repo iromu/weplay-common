@@ -8,15 +8,21 @@ class Server {
     this.options = options
     this.name = options.name
     var port = options.port
+    var statusPort = options.statusPort
+
+    if (statusPort) {
+      this.createRestServer(statusPort)
+    }
 
     logger.debug('[%s] DiscoveryServer constructor starting on port %s', options.name, options.port)
     var sio = require('socket.io')
     this.io = sio()
     this._services = []
+    this._eventLog = []
     this.listeners = options.serverListeners
 
     this.io.on('connection', socket => {
-      logger.debug('[%s] Discovery Server.onConnection', this.name, socket.id)
+      // logger.debug('[%s] Discovery Server.onConnection', this.name, socket.id)
       const req = socket.request
       const ip = forwarded(req, req.headers).ip.split(':').pop()
       // Subscribe to listeners
@@ -33,6 +39,7 @@ class Server {
         io: this.io,
         socket: socket,
         _services: this._services,
+        _eventLog: this._eventLog,
         onRegisterListener: this.onRegisterListener,
         onAnnounceListener: this.onAnnounceListener
       })
@@ -57,6 +64,72 @@ class Server {
     }
   }
 
+  createRestServer(statusPort) {
+    var restify = require('restify')
+
+    function csvHandler(req, res, next) {
+      var sendHeader = true
+      res.send(this.eventLog().map(log => {
+        if (sendHeader) {
+          sendHeader = false
+          return Object.keys(log).join(',')
+        } else {
+          return Object.keys(log).map(k => {
+            return log[k]
+          }).join(',')
+        }
+      }).join('\n'))
+      next()
+    }
+
+    function lookupHandler(req, res, next) {
+      res.send(this._services.map(service => {
+        if (service.events) {
+          const events = service.events.map(e => {
+            return (e.room) ? e.event + '#' + e.room : e.event
+          })
+          const streams = service.events.filter(e => e.room).map(e => {
+            return e.room
+          })
+          return {
+            name: service.name,
+            id: service.id,
+            version: service.version,
+            events: events,
+            streams: streams,
+            depends: service.depends
+          }
+        }
+        else {
+          return {name: service.name, id: service.id, version: service.version}
+        }
+      }).sort(function (a, b) {
+        return a.name > b.name
+      }))
+      next()
+    }
+
+    var server = restify.createServer({
+      formatters: {
+        'application/json': function (req, res, body, cb) {
+          return cb(null, JSON.stringify(body, null, '\t'))
+        }
+      }
+    })
+    server.name = this.name
+    server.pre(restify.pre.userAgentConnection())
+
+    server.get('/lookup', lookupHandler.bind(this))
+    server.head('/lookup', lookupHandler.bind(this))
+
+    server.get('/csv', csvHandler.bind(this))
+    server.head('/csv', csvHandler.bind(this))
+
+    server.listen(statusPort, function () {
+      logger.info('Restify [%s] listening at %s', server.name, server.url)
+    })
+  }
+
   onStreamCreateRequested(data) {
 
   }
@@ -74,7 +147,7 @@ class Server {
 
   subscribe(socket, event, listener) {
     if (listener) {
-      logger.info('[%s] Discovery Server[%s].subscribe Adding listener to event %s', this.name, this.options.name, event)
+      // logger.info('[%s] Discovery Server[%s].subscribe Adding listener to event %s', this.name, this.options.name, event)
       socket.on(event, (data) => {
         listener(socket, data)
       })
@@ -87,6 +160,10 @@ class Server {
 
   lookup() {
     return this._services
+  }
+
+  eventLog() {
+    return this._eventLog
   }
 
   onRegister(listener) {

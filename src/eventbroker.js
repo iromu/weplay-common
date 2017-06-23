@@ -1,11 +1,13 @@
 /* eslint-disable semi,spaced-comment */
 const logger = require('./logger')('common-eventbroker')
 
+const _ = require('lodash')
 class EventBroker {
   constructor(discoveryClient, clientListeners) {
     // this.subscriptions = {};
     this._services = []
     this.queue = {}
+    this.streamJoinHashes = {}
 
     this.discoveryClient = discoveryClient
     this.name = this.discoveryClient.name
@@ -42,7 +44,7 @@ class EventBroker {
         service.on(command.event, command.data)
       })
       delete this.queue[service.name]
-      this.queue[service.name] = {emit: [], on: [], streamJoin: []}
+      this.queue[service.name] = {emit: [], on: [], streamJoin: [], streamLeave: []}
     }
   }
 
@@ -66,7 +68,7 @@ class EventBroker {
 
     if (!service.emit) {
       service.emit = (_event, _args) => {
-        logger.debug('[%s] EventBroker[%s] 2 emit %s', this.name, service.name, _event)
+        logger.debug('[%s] EventBroker[channel:%s] 2 emit %s', this.name, service.name, _event)
         service.socket.emit(_event, _args)
       }
     }
@@ -83,20 +85,52 @@ class EventBroker {
         var info = {service: service.name, room: room, event: event}
         logger.debug('[%s] EventBroker service.streamJoin requesting ', this.name, info)
 
+        if (!this.streamJoinHashes[service.name]) {
+          this.streamJoinHashes[service.name] = []
+        }
+
         if (!service.streamJoinHashes) {
           service.streamJoinHashes = []
         }
 
         if (!service.streamJoinHashes.includes(room)) {
           service.streamJoinHashes.push(room)
-          service.socket.removeListener(event)
-          service.socket.on(event, listener)
-        } else {
+        }
+
+        if (!service.events) {
+          service.events = []
+        }
+
+        var eventInfo = {room: room}
+        if (!service.events.includes(eventInfo)) {
+          service.events.push(eventInfo)
+        }
+
+        if (!this.streamJoinHashes[service.name].includes(room)) {
+          this.streamJoinHashes[service.name].push(room)
+          if (event) {
+            service.socket.on(event, listener)
+          }
+        } else if (event) {
           service.socket.removeListener(event)
           service.socket.on(event, listener)
         }
 
         service.socket.emit('streamJoinRequested', room)
+      }
+    }
+
+    if (!service.streamLeave) {
+      service.streamLeave = (room) => {
+        var info = {service: service.name, room: room}
+        logger.debug('[%s] EventBroker service.streamLeave requesting ', this.name, info)
+
+        if (!this.streamJoinHashes[service.name]) {
+          this.streamJoinHashes[service.name] = []
+        }
+
+        this.streamJoinHashes[service.name] = this.streamJoinHashes[service.name].filter(r => r !== room)
+        service.socket.emit('streamLeaveRequested', room)
       }
     }
 
@@ -144,37 +178,72 @@ class EventBroker {
   }
 
   getService(channel, room) {
-    logger.debug('[%s] EventBroker.getService ', this.name, {
-      serviceName: channel,
+    logger.info('[%s] EventBroker.getService ', this.name, {
+      channel: channel,
       room: room
     })
-    const matchesRoom = service => service.name === channel && service.room === room
+
+    const matchesRoom = service => {
+      if (service.events) {
+        service.streams = service.events.filter(e => e.room).map(e => {
+          return e.room
+        })
+        var serviceInfo = _.omit(service, ['ip', 'scheme', 'port', 'socket', 'emit', 'streamJoin', 'streamLeave', 'on'])
+        logger.info('service.streams %s/%s serviceInfo %s', channel, room, JSON.stringify(serviceInfo))
+      }
+      return service.name === channel && service.streams && service.streams.includes(room)
+    }
     const matchesName = service => service.name === channel
 
     const condition = (room) ? matchesRoom : matchesName
     var service = this._services.filter(condition)[0]
     if (!service && !this.queue[channel]) {
-      this.queue[channel] = {emit: [], on: [], streamJoin: []}
+      this.queue[channel] = {emit: [], on: [], streamJoin: [], streamLeave: []}
     } else {
       return service
     }
   }
 
-  emit(channel, event, data) {
-    logger.debug('[%s] EventBroker[%s] 1 emit %s', this.name, channel, event)
-    var service = this.getService(channel)
+  emit(channel, event, data, room) {
+    logger.debug('[%s] EventBroker[channel:%s] 1 emit event:%s', this.name, channel, event)
+    var service = this.getService(channel, room)
     if (!service) {
       this.queue[channel].emit.push({event: event, data: data})
       // Ask discovery service for the location of this service.
       this.discoveryClient.emit('discover', {channel: channel})
+
+      logger.debug('[%s] EventBroker[channel:%s] 1.1 emit event:%s', this.name, channel, event)
     } else {
       service.emit(event, data)
+
+      logger.debug('[%s] EventBroker[channel:%s] 1.2 emit event:%s', this.name, channel, event)
     }
   }
 
+  subscribe(options, listener) {
+    this.discoveryClient.publishStreamConsumer(options.room, options.event)
+  }
+
   stream(room, event, data) {
-    // logger.info('[%s] EventBroker [%s] stream %s', this.name, room, event)
     this.discoveryClient.publish(room, event, data)
+  }
+
+  publish(channel, room, event, data) {
+    var service = this.getService(channel, room)
+    if (!service) {
+      // Ask discovery service for the location of this stream.
+      logger.debug('[%s] EventBroker [%s.%s] streamJoin ASK %s', this.name, channel, room, event)
+      this.queue[channel].streamJoin.push({room: room, event: event})
+      this.discoveryClient.emit('discover', {channel: channel, room: room})
+      // this.discoveryClient.emit('streamCreateRequested', {channel: channel, room: room})
+
+      // Ask discovery service for the location of this service.
+      //this.discoveryClient.emit('discover', {channel: channel});
+    } else {
+      logger.debug('[%s] EventBroker [%s.%s] streamJoin %s', this.name, channel, room, event)
+      service.socket.to(room).emit(event, data)
+    }
+    //this.on(channel, event, listener);
   }
 
   streamJoin(channel, room, event, listener) {
@@ -193,6 +262,18 @@ class EventBroker {
       service.streamJoin(room, event, listener)
     }
     //this.on(channel, event, listener);
+  }
+
+  streamLeave(channel, room) {
+    var service = this.getService(channel, room)
+    if (!service) {
+      logger.debug('[%s] EventBroker [%s.%s] streamLeave DISCOVER', this.name, channel, room)
+      this.queue[channel].streamLeave.push({room: room})
+      this.discoveryClient.emit('discover', {channel: channel, room: room})
+    } else {
+      logger.debug('[%s] EventBroker [%s.%s] streamLeave CALL', this.name, channel, room)
+      service.streamLeave(room)
+    }
   }
 
   on(channel, event, callback) {
