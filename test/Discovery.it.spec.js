@@ -19,7 +19,7 @@ const discoveryUrl = 'http://localhost:' + discoveryPort
 
 describe('Discovery', () => {
   beforeEach((done) => {
-    discovery = new Discovery().server({name: 'discovery', port: discoveryPort}, done)
+    discovery = new Discovery().server({name: 'My Discovery Test Server', port: discoveryPort}, done)
     serviceCleanup.push(discovery.destroy.bind(discovery))
   })
 
@@ -217,12 +217,13 @@ describe('Discovery', () => {
       event = 'echo'
       var worker
       var onWorkerStreamJoined = (data) => {
-        console.log('Check incoming message from Emitter', data)
-        if (data === 'J') {
+        if (data === 'Joined') {
           // Send message to emitter through room
           worker.emit({channel: channel, room: room, event: event, data: 'Hello'})
         } else if (data === 'Hello') {
           done()
+        } else {
+          fail(data)
         }
       }
 
@@ -232,28 +233,18 @@ describe('Discovery', () => {
         id: 'emitter',
         serverListeners: {
           'echo': (socket, request) => {
-            console.log('echo Request', socket.id)
             emitter.stream(room, event, request)
           },
           'streamJoinRequested': (socket, request) => {
-            console.log('Stream Join Request', request)
             socket.join(request)
-            //  this.server.to(room).emit(event, data)
-            emitter.stream(request, event, 'J')
-          },
-          'streamCreateRequested': (socket, request) => {
-            console.log('Stream Init Request', request)
-            socket.join(request)
-            emitter.stream(request, event, 'C')
+            emitter.stream(request, event, 'Joined')
           }
         }
       }, () => {
-        console.log('Init Emitter')
         worker = busFactory({
           name: 'worker',
           id: 'worker'
         }, () => {
-          console.log('Worker joining stream', {channel: channel, room: room, event: event})
           // Request Stream creation and join
           worker.streamJoin(channel, room, event, onWorkerStreamJoined)
         })

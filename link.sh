@@ -12,6 +12,7 @@ cd ../weplay-compressor
 npm link weplay-common
 
 cd ../weplay-emulator
+npm link weplay-common
 
 cd ../weplay-presence
 npm link weplay-common
@@ -23,4 +24,10 @@ cd ../weplay-discovery
 npm link weplay-common
 
 cd ../weplay-relay
+npm link weplay-common
+
+cd ../weplay-discovery
+npm link weplay-common
+
+cd ../weplay-rom
 npm link weplay-common

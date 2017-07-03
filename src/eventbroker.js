@@ -135,7 +135,7 @@ class EventBroker {
     }
 
     service.socket.on('connect', () => {
-      logger.debug('[%s] EventBroker Connected to service', this.name, {
+      logger.info('[%s] EventBroker Connected to service', this.name, {
         name: service.name,
         url: url
       })
