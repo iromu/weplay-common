@@ -10,9 +10,7 @@ class DiscoveryServerStatus {
 
       var server = restify.createServer({
         formatters: {
-          'application/json': function (req, res, body, cb) {
-            return cb(null, util.inspect(body, null, '\t'))
-          }
+          'application/json': (req, res, body, cb) => cb(null, util.inspect(body, null, '\t'))
         }
       })
       server.name = this.name
@@ -24,7 +22,7 @@ class DiscoveryServerStatus {
       server.get('/csv', this.csvHandler.bind(this))
       server.head('/csv', this.csvHandler.bind(this))
 
-      server.listen(options.statusPort, function () {
+      server.listen(options.statusPort, () => {
         logger.info('Restify [%s] listening at %s', server.name, server.url)
       })
     }
@@ -62,8 +60,7 @@ class DiscoveryServerStatus {
           streams: streams,
           depends: service.depends
         }
-      }
-      else {
+      } else {
         return {name: service.name, id: service.id, version: service.version}
       }
     }).sort((a, b) => {
@@ -72,4 +69,5 @@ class DiscoveryServerStatus {
     next()
   }
 }
+
 module.exports = DiscoveryServerStatus

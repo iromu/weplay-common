@@ -15,7 +15,7 @@ class EventBus {
   // Discovery finds which Service listens to the given {event}
   // and replays the event
   emit(options, event, data, room) {
-    if (!!options.channel) {
+    if (!options.channel) {
       this.broker.emit(options.channel, options.event, options.data, options.room)
     } else {
       this.broker.emit(options, event, data, room)

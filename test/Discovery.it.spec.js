@@ -252,36 +252,36 @@ describe('Discovery', () => {
     })
 
     it('should reconnect an stream when emitter goes online again', (done) => {
+      channel = 'emitterRec'
+      room = 'roomRec'
+      event = 'eventRec'
       var emitter
       var worker
       var emitterIsReconnecting
+      var i = 0
+      var emitterConfig = {
+        name: channel,
+        id: 'emitter',
+        serverListeners: {
+          'streamJoinRequested': (socket, request) => {
+            socket.join(request)
+            emitter.stream(request, event, 'data J' + i++)
+          }
+        }
+      }
+
       var checkTest = (data) => {
-        console.log(data)
-        expect(data).to.be.equal('data J')
+        expect(data).to.be.equal('data J0')
         if (emitterIsReconnecting) {
           done()
         }
         emitterIsReconnecting = true
         emitter.destroy()
         emitter = busFactory(emitterConfig, () => {
-          emitter.stream(room, event, 'data J2')
+          emitter.stream(room, event, 'data J' + i++)
         })
-        emitter.stream(room, event, 'data J2')
       }
-      var emitterConfig = {
-        name: 'emitter',
-        id: 'emitter',
-        serverListeners: {
-          'streamJoinRequested': (socket, request) => {
-            socket.join(request)
-            emitter.stream(request, event, 'data J')
-          },
-          'streamCreateRequested': (socket, request) => {
-            socket.join(request)
-            emitter.stream(request, event, 'data C')
-          }
-        }
-      }
+
       emitter = busFactory(emitterConfig, () => {
         worker = busFactory({
           name: 'worker',
@@ -291,7 +291,8 @@ describe('Discovery', () => {
               name: channel,
               event: 'connect',
               handler: () => {
-                if (emitterIsReconnecting) {
+                if (!emitterIsReconnecting) {
+                  emitterIsReconnecting = true
                   worker.streamJoin(channel, room, event, checkTest)
                 }
               }
@@ -312,11 +313,35 @@ describe('Discovery', () => {
     })
 
     it('should start a stream when a emitter connects', (done) => {
+      channel = 'emitterRec2'
+      room = 'roomRec2'
+      event = 'eventRec2'
+
       var checkTest = (data) => {
         expect(data).to.be.equal('data J')
         done()
       }
-      var worker = busFactory({name: 'worker', id: 'worker'}, () => {
+      var worker
+      worker = busFactory({
+        name: 'worker',
+        id: 'worker',
+        clientListeners: [
+          {
+            name: channel,
+            event: 'connect',
+            handler: () => {
+              worker.streamJoin(channel, room, event, checkTest)
+            }
+          },
+          {
+            name: channel,
+            event: 'disconnect',
+            handler: () => {
+              worker.streamLeave(channel, room)
+            }
+          }
+        ]
+      }, () => {
         worker.streamJoin(channel, room, event, checkTest)
         var emitter = busFactory({
           name: channel,

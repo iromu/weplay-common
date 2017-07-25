@@ -99,21 +99,16 @@ class Server {
             streams: streams,
             depends: service.depends
           }
-        }
-        else {
+        } else {
           return {name: service.name, id: service.id, version: service.version}
         }
-      }).sort(function (a, b) {
-        return a.name > b.name
-      }))
+      }).sort((a, b) => a.name > b.name))
       next()
     }
 
     var server = restify.createServer({
       formatters: {
-        'application/json': function (req, res, body, cb) {
-          return cb(null, JSON.stringify(body, null, '\t'))
-        }
+        'application/json': (req, res, body, cb) => cb(null, JSON.stringify(body, null, '\t'))
       }
     })
     server.name = this.name
@@ -125,7 +120,7 @@ class Server {
     server.get('/csv', csvHandler.bind(this))
     server.head('/csv', csvHandler.bind(this))
 
-    server.listen(statusPort, function () {
+    server.listen(statusPort, () => {
       logger.info('Restify [%s] listening at %s', server.name, server.url)
     })
   }
