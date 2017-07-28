@@ -49,7 +49,7 @@ class DiscoveryServerStatus {
         const events = service.events.map(e => {
           return (e.room) ? e.event + '#' + e.room : e.event
         })
-        const streams = service.events.filter(e => e.room).map(e => {
+        var streams = service.events.filter(e => e.room !== undefined).map(e => {
           return e.room
         })
         return {
@@ -57,7 +57,7 @@ class DiscoveryServerStatus {
           id: service.id,
           version: service.version,
           events: events,
-          streams: streams,
+          streams: Array.from(new Set(streams)),
           depends: service.depends
         }
       } else {

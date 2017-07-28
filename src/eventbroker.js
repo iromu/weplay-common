@@ -20,20 +20,20 @@ class EventBroker {
   }
 
   processQueue(service) {
-    logger.debug('[%s] EventBroker.processQueue[%s] queue exists? %s',
-      this.name, service.name, !!this.queue[service.name])
+    // logger.debug('[%s] EventBroker.processQueue[%s] queue exists? %s',
+    // this.name, service.name, !!this.queue[service.name])
     if (this.queue[service.name]) {
       this.queue[service.name].emit.forEach(command => {
         service.emit(command.event, command.data)
       })
       //room, event, listener
       //var pending = [];
-      logger.debug('[%s] EventBroker.processQueue[name %s] joinqueue exists? %s',
-        this.name, service.name, !!this.queue[service.name].streamJoin)
+      // logger.debug('[%s] EventBroker.processQueue[name %s] joinqueue exists? %s',
+      //   this.name, service.name, !!this.queue[service.name].streamJoin)
 
       this.queue[service.name].streamJoin.forEach((command) => {
         //if(service.events.filter(data=>data.room === command.room))
-        logger.debug('[%s] WARNING EventBroker.processQueue[%s] stream join %s', this.name, service.name, command.room)
+        // logger.debug('[%s] WARNING EventBroker.processQueue[%s] stream join %s', this.name, service.name, command.room)
         service.streamJoin(command.room, command.event, command.listener)
         //else {
         //    logger.error('WARNING EventBroker.processQueue[%s] pending stream join %s', service.name, command.room);
@@ -68,7 +68,7 @@ class EventBroker {
 
     if (!service.emit) {
       service.emit = (_event, _args) => {
-        logger.debug('[%s] EventBroker[channel:%s] 2 emit %s', this.name, service.name, _event)
+        // logger.debug('[%s] EventBroker[channel:%s] 2 emit %s', this.name, service.name, _event)
         service.socket.emit(_event, _args)
       }
     }
@@ -178,10 +178,10 @@ class EventBroker {
   }
 
   getService(channel, room) {
-    logger.info('[%s] EventBroker.getService ', this.name, {
-      channel: channel,
-      room: room
-    })
+    // logger.info('[%s] EventBroker.getService ', this.name, {
+    //   channel: channel,
+    //   room: room
+    // })
 
     const matchesRoom = service => {
       if (service.events) {
@@ -189,7 +189,7 @@ class EventBroker {
           return e.room
         })
         var serviceInfo = _.omit(service, ['ip', 'scheme', 'port', 'socket', 'emit', 'streamJoin', 'streamLeave', 'on'])
-        logger.info('service.streams %s/%s serviceInfo %s', channel, room, JSON.stringify(serviceInfo))
+        // logger.info('service.streams %s/%s serviceInfo %s', channel, room, JSON.stringify(serviceInfo))
       }
       return service.name === channel && service.streams && service.streams.includes(room)
     }
@@ -205,18 +205,18 @@ class EventBroker {
   }
 
   emit(channel, event, data, room) {
-    logger.debug('[%s] EventBroker[channel:%s] 1 emit event:%s', this.name, channel, event)
+    // logger.debug('[%s] EventBroker[channel:%s] 1 emit event:%s', this.name, channel, event)
     var service = this.getService(channel, room)
     if (!service) {
       this.queue[channel].emit.push({event: event, data: data})
       // Ask discovery service for the location of this service.
       this.discoveryClient.emit('discover', {channel: channel})
 
-      logger.debug('[%s] EventBroker[channel:%s] 1.1 emit event:%s', this.name, channel, event)
+      // logger.debug('[%s] EventBroker[channel:%s] 1.1 emit event:%s', this.name, channel, event)
     } else {
       service.emit(event, data)
 
-      logger.debug('[%s] EventBroker[channel:%s] 1.2 emit event:%s', this.name, channel, event)
+      // logger.debug('[%s] EventBroker[channel:%s] 1.2 emit event:%s', this.name, channel, event)
     }
   }
 

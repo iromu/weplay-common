@@ -83,7 +83,9 @@ class DiscoveryServerListeners {
 
           if (!discovered.events.filter(e => e.room === eventData.room && e.event === eventData.event)[0]) {
             discovered.events.push(eventData)
-            discovered.rooms.push(eventData.room)
+            if (eventData.room && !discovered.rooms.includes(eventData.room)) {
+              discovered.rooms.push(eventData.room)
+            }
           }
 
           if (this.onAnnounceListener) {
@@ -132,7 +134,7 @@ class DiscoveryServerListeners {
           })
         } else {
           // Find a this.service that supports creating the string
-          discovered = this._services.filter(s => s.name === request.channel)[0]
+          discovered = this._services.filter(s => s.name === request.channel).sort((a, b) => a.rooms.length > b.rooms.length)[0]
           if (discovered) {
             // request the creation of the stream
             // logger.debug('> discovered', discovered)
@@ -164,4 +166,5 @@ class DiscoveryServerListeners {
     }
   }
 }
+
 module.exports = DiscoveryServerListeners

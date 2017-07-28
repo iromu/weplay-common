@@ -96,7 +96,7 @@ class Server {
             id: service.id,
             version: service.version,
             events: events,
-            streams: streams,
+            streams: Array.from(new Set(streams)),
             depends: service.depends
           }
         } else {
