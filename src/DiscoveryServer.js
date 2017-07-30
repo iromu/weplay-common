@@ -47,6 +47,7 @@ class Server {
         'disconnect': this.discoveryServerListeners.disconnect,
         'register': this.discoveryServerListeners.register,
         'announce': this.discoveryServerListeners.announce,
+        'unannounce': this.discoveryServerListeners.unannounce,
         'discover': this.discoveryServerListeners.discover,
         'streamCreateRequested': this.discoveryServerListeners.streamCreateRequested,
         'streamJoinRequested': this.discoveryServerListeners.streamJoinRequested

@@ -93,6 +93,39 @@ class DiscoveryServerListeners {
           }
         }
       },
+
+      'unannounce': _service => {
+        logger.debug('[%s] DiscoveryServerListeners.unannounce', this.service.name, _service)
+        var channel = _service.name
+        var room = _service.room
+        var id = _service.id
+        var event = _service.event
+        if (room || event) {
+          this._services
+            .filter(e => e.id === id)
+            .forEach(s => {
+              if (s.rooms && room) {
+                s.rooms = s.rooms.filter(s => s !== room)
+                if (s.rooms.length === 0) {
+                  delete s.rooms
+                }
+              }
+              if (s.events) {
+                s.events = s.events.filter(e => !room || room !== e.room)
+                // s.events = s.events.filter(e => !event || e.event !== event)
+              }
+            })
+          this._services
+            .forEach(s => {
+              if (s.depends) {
+                s.depends = s.depends.filter(d => d.channel !== channel && d.room !== room)
+                if (s.depends.length === 0) {
+                  delete s.depends
+                }
+              }
+            })
+        }
+      },
       'discover': (request) => {
         var requester = this._services.filter(s => s.id === this.service.id)[0]
         this._eventLog.push({

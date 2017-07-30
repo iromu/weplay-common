@@ -115,6 +115,19 @@ class Client {
     this.server.to(room).emit(event, data)
   }
 
+  destroyStream(room, event) {
+    this.rooms = this.rooms.filter(r => r !== room)
+    this.socket.emit('unannounce', {
+      name: this.options.name,
+      id: this.id,
+      port: this.options.port,
+      room: room,
+      event: event
+    })
+    // private push
+    this.server.to(room).emit('destroy', room)
+  }
+
   destroy() {
     this.server.destroy()
     this.socket.close()

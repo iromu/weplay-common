@@ -39,6 +39,10 @@ class EventBus {
     this.broker.publish(room, event, data)
   }
 
+  destroyStream(room, event) {
+    this.broker.destroyStream(room, event)
+  }
+
   subscribe(options, listener) {
     this.broker.subscribe(options, listener)
   }

@@ -2,6 +2,7 @@
 const logger = require('./logger')('common-eventbroker')
 
 const _ = require('lodash')
+
 class EventBroker {
   constructor(discoveryClient, clientListeners) {
     // this.subscriptions = {};
@@ -123,13 +124,24 @@ class EventBroker {
     if (!service.streamLeave) {
       service.streamLeave = (room) => {
         var info = {service: service.name, room: room}
+        var channel = service.name
         logger.debug('[%s] EventBroker service.streamLeave requesting ', this.name, info)
 
-        if (!this.streamJoinHashes[service.name]) {
-          this.streamJoinHashes[service.name] = []
+        if (!this.streamJoinHashes[channel]) {
+          this.streamJoinHashes[channel] = []
         }
 
-        this.streamJoinHashes[service.name] = this.streamJoinHashes[service.name].filter(r => r !== room)
+        this.streamJoinHashes[channel] = this.streamJoinHashes[channel].filter(r => r !== room)
+
+        this._services
+          .filter(e => (e.streams && e.streams.includes(room)) && e.name === channel)
+          .forEach(s => {
+            s.streams = s.streams.filter(s => s !== room)
+            if (s.streams.length === 0) {
+              delete s.streams
+            }
+          })
+
         service.socket.emit('streamLeaveRequested', room)
       }
     }
@@ -228,6 +240,10 @@ class EventBroker {
     this.discoveryClient.publish(room, event, data)
   }
 
+  destroyStream(room, event) {
+    this.discoveryClient.destroyStream(room, event)
+  }
+
   publish(channel, room, event, data) {
     var service = this.getService(channel, room)
     if (!service) {
@@ -267,9 +283,7 @@ class EventBroker {
   streamLeave(channel, room) {
     var service = this.getService(channel, room)
     if (!service) {
-      logger.debug('[%s] EventBroker [%s.%s] streamLeave DISCOVER', this.name, channel, room)
-      this.queue[channel].streamLeave.push({room: room})
-      this.discoveryClient.emit('discover', {channel: channel, room: room})
+      logger.error('[%s] EventBroker [%s.%s] streamLeave ERROR!!!', this.name, channel, room)
     } else {
       logger.debug('[%s] EventBroker [%s.%s] streamLeave CALL', this.name, channel, room)
       service.streamLeave(room)
