@@ -9,12 +9,12 @@ const EventBus = require('../src/eventbus')
 const Discovery = require('../src/discovery')
 
 // ports used in this test
-var latestPort = 50000
-var ports = Array.from({length: 100}, () => latestPort++)
+let latestPort = 50000
+let ports = Array.from({length: 100}, () => latestPort++)
 
-var serviceCleanup = []
-var discovery
-var discoveryPort = ports.pop()
+let serviceCleanup = []
+let discovery
+let discoveryPort = ports.pop()
 const discoveryUrl = 'http://localhost:' + discoveryPort
 
 describe('Discovery', () => {
@@ -30,10 +30,10 @@ describe('Discovery', () => {
     done()
   })
 
-  var busFactory = (config, onConnect) => {
+  let busFactory = (config, onConnect) => {
     config.url = discoveryUrl
     config.port = ports.pop()
-    var bus = new EventBus(config, onConnect)
+    let bus = new EventBus(config, onConnect)
     serviceCleanup.push(bus.destroy.bind(bus))
     return bus
   }
@@ -49,11 +49,11 @@ describe('Discovery', () => {
 
     it('should register two services', (done) => {
 
-      var expectedEvents = [{name: 'twoServiceRegistryTest', id: 'service1'}, {
+      let expectedEvents = [{name: 'twoServiceRegistryTest', id: 'service1'}, {
         name: 'twoServiceRegistryTest',
         id: 'service2'
       }]
-      var expectedEventsCounter = expectedEvents.length
+      let expectedEventsCounter = expectedEvents.length
       discovery.onRegister((event) => {
         const eventDAta = {name: event.name, id: event.id}
         if (expectedEvents.find(expected => expected.name === eventDAta.name && expected.id === eventDAta.id)) {
@@ -70,8 +70,8 @@ describe('Discovery', () => {
     })
 
     it('should register service events', (done) => {
-      var expectedEvents = [{event: 'event1'}, {event: 'event2'}]
-      var expectedEventsCounter = expectedEvents.length
+      let expectedEvents = [{event: 'event1'}, {event: 'event2'}]
+      let expectedEventsCounter = expectedEvents.length
       discovery.onAnnounce((service) => {
         service.events.forEach((event) => {
           const eventDAta = {event: event.event}
@@ -102,18 +102,18 @@ describe('Discovery', () => {
 
   describe('onStreaming', () => {
 
-    var channel = 'emitter'
-    var room = 'room1'
-    var event = 'event1'
+    let channel = 'emitter'
+    let room = 'room1'
+    let event = 'event1'
     beforeEach(() => {
       channel = 'emitter'
       room = 'room1'
       event = 'event1'
     })
     it('should announce stream events', (done) => {
-      var emitter
-      var expectedEvents = [{event: 'streamJoinRequested', room: room}, {event: event, room: room}]
-      var expectedEventsCounter = expectedEvents.length
+      let emitter
+      let expectedEvents = [{event: 'streamJoinRequested', room: room}, {event: event, room: room}]
+      let expectedEventsCounter = expectedEvents.length
       discovery.onAnnounce((service) => {
         service.events.forEach((event) => {
           const eventDAta = {event: event.event, room: event.room}
@@ -130,21 +130,21 @@ describe('Discovery', () => {
         }
       })
 
-      var onConnectEmitter = () => {
+      let onConnectEmitter = () => {
         emitter.stream(room, event, 'data 1')
       }
       emitter = busFactory({name: 'emitter', id: 'emitter'}, onConnectEmitter)
     })
 
     it('should handshake an stream with default handler', (done) => {
-      var emitter
-      var checkTest = (data) => {
+      let emitter
+      let checkTest = (data) => {
         expect(data).to.be.equal('data R')
         done()
       }
-      var onConnectEmitter = () => {
+      let onConnectEmitter = () => {
         emitter.stream(room, event, 'data 1')
-        var worker = busFactory({name: 'worker', id: 'worker'}, () => {
+        let worker = busFactory({name: 'worker', id: 'worker'}, () => {
           emitter.stream(room, event, 'data 2')
           worker.streamJoin(channel, room, event, checkTest)
           setTimeout(() => {
@@ -158,14 +158,14 @@ describe('Discovery', () => {
     })
 
     it('should handshake an stream with custom handler', (done) => {
-      var emitter
-      var checkTest = (data) => {
+      let emitter
+      let checkTest = (data) => {
         expect(data).to.be.equal('data Custom')
         done()
       }
-      var onConnectEmitter = () => {
+      let onConnectEmitter = () => {
         emitter.stream(room, event, 'data 1')
-        var worker = busFactory({name: 'worker', id: 'worker'}, () => {
+        let worker = busFactory({name: 'worker', id: 'worker'}, () => {
           emitter.stream(room, event, 'data 2')
           worker.streamJoin(channel, room, event, checkTest)
         })
@@ -187,11 +187,11 @@ describe('Discovery', () => {
       channel = 'emitter2'
       room = 'room2'
       event = 'event2'
-      var onWorkerStreamJoined = (data) => {
+      let onWorkerStreamJoined = (data) => {
         expect(data).to.be.equal('data J')
         done()
       }
-      var emitter = busFactory({
+      let emitter = busFactory({
         name: channel,
         id: 'emitter',
         serverListeners: {
@@ -205,7 +205,7 @@ describe('Discovery', () => {
           }
         }
       }, () => {
-        var worker = busFactory({name: 'worker', id: 'worker'}, () => {
+        let worker = busFactory({name: 'worker', id: 'worker'}, () => {
           worker.streamJoin(channel, room, event, onWorkerStreamJoined)
         })
       })
@@ -215,8 +215,8 @@ describe('Discovery', () => {
       channel = 'emitterEcho'
       room = 'roomEcho'
       event = 'echo'
-      var worker
-      var onWorkerStreamJoined = (data) => {
+      let worker
+      let onWorkerStreamJoined = (data) => {
         if (data === 'Joined') {
           // Send message to emitter through room
           worker.emit({channel: channel, room: room, event: event, data: 'Hello'})
@@ -228,7 +228,7 @@ describe('Discovery', () => {
       }
 
       // Prepare emitter listeners
-      var emitter = busFactory({
+      let emitter = busFactory({
         name: channel,
         id: 'emitter',
         serverListeners: {
@@ -255,22 +255,22 @@ describe('Discovery', () => {
       channel = 'emitterRec'
       room = 'roomRec'
       event = 'eventRec'
-      var emitter
-      var worker
-      var emitterIsReconnecting
-      var i = 0
-      var emitterConfig = {
+      let emitter
+      let worker
+      let emitterIsReconnecting
+      let i = 0
+      let emitterConfig = {
         name: channel,
         id: 'emitter',
         serverListeners: {
           'streamJoinRequested': (socket, request) => {
             socket.join(request)
-            emitter.stream(request, event, 'data J' + i++)
+            emitter.stream(request, event, 'data J' + i)
           }
         }
       }
 
-      var checkTest = (data) => {
+      let checkTest = (data) => {
         expect(data).to.be.equal('data J0')
         if (emitterIsReconnecting) {
           done()
@@ -316,12 +316,12 @@ describe('Discovery', () => {
       channel = 'emitterRec2'
       room = 'roomRec2'
       event = 'eventRec2'
-
-      var checkTest = (data) => {
-        expect(data).to.be.equal('data J')
+      let i = 0
+      let checkTest = (data) => {
+        expect(data).to.be.equal('data J' + i++)
         done()
       }
-      var worker
+      let worker
       worker = busFactory({
         name: 'worker',
         id: 'worker',
@@ -343,13 +343,13 @@ describe('Discovery', () => {
         ]
       }, () => {
         worker.streamJoin(channel, room, event, checkTest)
-        var emitter = busFactory({
+        let emitter = busFactory({
           name: channel,
           id: 'emitter',
           serverListeners: {
             'streamJoinRequested': (socket, request) => {
               socket.join(request)
-              emitter.stream(request, event, 'data J')
+              emitter.stream(request, event, 'data J' + i++)
             },
             'streamCreateRequested': (socket, request) => {
               socket.join(request)

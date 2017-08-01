@@ -20,7 +20,7 @@
     "tdd:mac": "NODE_ENV=test ./node_modules/.bin/mocha -w"
   },
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=8.0.0"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
