@@ -36,6 +36,7 @@ class Server {
       }
       this.discoveryServerListeners = new DiscoveryServerListeners({
         ip: ip,
+        name: this.name,
         io: this.io,
         socket: socket,
         _services: this._services,
@@ -52,6 +53,16 @@ class Server {
         'streamCreateRequested': this.discoveryServerListeners.streamCreateRequested,
         'streamJoinRequested': this.discoveryServerListeners.streamJoinRequested
       }
+
+      // TODO auto extend instead of omitting
+      if (this.listeners && this.listeners['streamCreateRequested']) {
+        delete this.serverListeners['streamCreateRequested']
+      }
+
+      if (this.listeners && this.listeners['streamJoinRequested']) {
+        delete this.serverListeners['streamJoinRequested']
+      }
+
       for (var serverEvent in this.serverListeners) {
         if (this.serverListeners.hasOwnProperty(serverEvent)) {
           const handler = this.serverListeners[serverEvent]
@@ -109,7 +120,7 @@ class Server {
 
     var server = restify.createServer({
       formatters: {
-        'application/json': (req, res, body, cb) => cb(null, JSON.stringify(body, null, '\t'))
+        'application/json': (req, res, body) => JSON.stringify(body, null, '\t')
       }
     })
     server.name = this.name

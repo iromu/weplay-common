@@ -1,7 +1,7 @@
 /* eslint-disable semi,spaced-comment */
 const logger = require('./logger')('common-eventbroker')
 
-const _ = require('lodash')
+// const _ = require('lodash')
 
 class EventBroker {
   constructor(discoveryClient, clientListeners) {
@@ -53,6 +53,8 @@ class EventBroker {
   subscribeService(service) {
     const serviceLog = {
       name: service.name,
+      streams: service.streams,
+      rooms: service.rooms,
       room: service.room,
       id: service.id,
       ip: service.ip,
@@ -109,11 +111,12 @@ class EventBroker {
 
         if (!this.streamJoinHashes[service.name].includes(room)) {
           this.streamJoinHashes[service.name].push(room)
-          if (event) {
+          if (event && listener) {
+            service.socket.off(event)
             service.socket.on(event, listener)
           }
-        } else if (event) {
-          service.socket.removeListener(event)
+        } else if (event && listener) {
+          service.socket.off(event)
           service.socket.on(event, listener)
         }
 
@@ -141,16 +144,12 @@ class EventBroker {
               delete s.streams
             }
           })
-
         service.socket.emit('streamLeaveRequested', room)
       }
     }
 
     service.socket.on('connect', () => {
-      logger.info('[%s] EventBroker Connected to service', this.name, {
-        name: service.name,
-        url: url
-      })
+      logger.info('[%s] EventBroker.connect service', this.name, serviceLog)
       if (service.disconnected) {
         logger.debug('[%s] EventBroker >> reconnected', this.name, serviceLog)
         service.disconnected = false
@@ -200,7 +199,7 @@ class EventBroker {
         service.streams = service.events.filter(e => e.room).map(e => {
           return e.room
         })
-        var serviceInfo = _.omit(service, ['ip', 'scheme', 'port', 'socket', 'emit', 'streamJoin', 'streamLeave', 'on'])
+        // var serviceInfo = _.omit(service, ['ip', 'scheme', 'port', 'socket', 'emit', 'streamJoin', 'streamLeave', 'on'])
         // logger.info('service.streams %s/%s serviceInfo %s', channel, room, JSON.stringify(serviceInfo))
       }
       return service.name === channel && service.streams && service.streams.includes(room)

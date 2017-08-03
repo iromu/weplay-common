@@ -1,16 +1,13 @@
 /* eslint-disable no-undef */
 'use strict'
 
-require('./common.spec')
+let ports = require('./common.spec')
 
+const uuidv1 = require('uuid/v1')
 process.env.NODE_ENV = 'test'
 
 const EventBus = require('../src/eventbus')
 const Discovery = require('../src/discovery')
-
-// ports used in this test
-let latestPort = 50000
-let ports = Array.from({length: 100}, () => latestPort++)
 
 let serviceCleanup = []
 let discovery
@@ -20,13 +17,14 @@ const discoveryUrl = 'http://localhost:' + discoveryPort
 describe('Discovery', () => {
   beforeEach((done) => {
     discovery = new Discovery().server({name: 'My Discovery Test Server', port: discoveryPort}, done)
-    serviceCleanup.push(discovery.destroy.bind(discovery))
   })
 
   afterEach((done) => {
     serviceCleanup.forEach((clean) => {
       clean()
     })
+    serviceCleanup = []
+    discovery.destroy()
     done()
   })
 
@@ -38,77 +36,21 @@ describe('Discovery', () => {
     return bus
   }
 
-  describe('onRegister', () => {
-    it('should register a new service', (done) => {
-      discovery.onRegister((service) => {
-        expect(service).to.include({name: 'onRegisterTest', id: 'test1'})
-        done()
-      })
-      busFactory({name: 'onRegisterTest', id: 'test1'})
-    })
-
-    it('should register two services', (done) => {
-
-      let expectedEvents = [{name: 'twoServiceRegistryTest', id: 'service1'}, {
-        name: 'twoServiceRegistryTest',
-        id: 'service2'
-      }]
-      let expectedEventsCounter = expectedEvents.length
-      discovery.onRegister((event) => {
-        const eventDAta = {name: event.name, id: event.id}
-        if (expectedEvents.find(expected => expected.name === eventDAta.name && expected.id === eventDAta.id)) {
-          expectedEvents = expectedEvents.filter(expected => !(expected.name === eventDAta.name && expected.id === eventDAta.id))
-          expectedEventsCounter--
-        }
-
-        if (expectedEventsCounter === 0) {
-          done()
-        }
-      })
-      busFactory({name: 'twoServiceRegistryTest', id: 'service2'})
-      busFactory({name: 'twoServiceRegistryTest', id: 'service1'})
-    })
-
-    it('should register service events', (done) => {
-      let expectedEvents = [{event: 'event1'}, {event: 'event2'}]
-      let expectedEventsCounter = expectedEvents.length
-      discovery.onAnnounce((service) => {
-        service.events.forEach((event) => {
-          const eventDAta = {event: event.event}
-          if (!eventDAta.room) {
-            delete eventDAta.room
-          }
-          if (expectedEvents.find(expected => expected.event === eventDAta.event)) {
-            expectedEvents = expectedEvents.filter(expected => !(expected.event === eventDAta.event))
-            expectedEventsCounter--
-          }
-        })
-        if (expectedEventsCounter === 0) {
-          expectedEventsCounter--
-          done()
-        }
-      })
-      discovery.onRegister((service) => {
-        expect(service).to.include({name: 'eventtest', id: 'eventtest1'})
-      })
-      busFactory({
-        name: 'eventtest',
-        id: 'eventtest1',
-        serverListeners: {'event1': undefined, 'event2': undefined},
-        clientListeners: [{name: 'notAnnounced', event: 'notAnnounced', handler: undefined}]
-      })
-    })
-  })
-
   describe('onStreaming', () => {
-
-    let channel = 'emitter'
-    let room = 'room1'
-    let event = 'event1'
+    let channel = 'emitter' + uuidv1()
+    let room = 'room1' + uuidv1()
+    let event = 'event1' + uuidv1()
     beforeEach(() => {
-      channel = 'emitter'
-      room = 'room1'
-      event = 'event1'
+      channel = 'emitter' + uuidv1()
+      room = 'room1' + uuidv1()
+      event = 'event1' + uuidv1()
+    })
+    afterEach((done) => {
+      serviceCleanup.forEach((clean) => {
+        clean()
+      })
+      serviceCleanup = []
+      done()
     })
     it('should announce stream events', (done) => {
       let emitter
@@ -133,7 +75,7 @@ describe('Discovery', () => {
       let onConnectEmitter = () => {
         emitter.stream(room, event, 'data 1')
       }
-      emitter = busFactory({name: 'emitter', id: 'emitter'}, onConnectEmitter)
+      emitter = busFactory({name: channel, id: channel}, onConnectEmitter)
     })
 
     it('should handshake an stream with default handler', (done) => {
@@ -153,7 +95,7 @@ describe('Discovery', () => {
           emitter.stream(room, event, 'data R')
         })
       }
-      emitter = busFactory({name: 'emitter', id: 'emitter'}, onConnectEmitter)
+      emitter = busFactory({name: channel, id: channel}, onConnectEmitter)
       emitter.stream(room, event, 'data 0')
     })
 
@@ -171,8 +113,8 @@ describe('Discovery', () => {
         })
       }
       emitter = busFactory({
-        name: 'emitter',
-        id: 'emitter',
+        name: channel,
+        id: channel,
         serverListeners: {
           'streamJoinRequested': (socket, request) => {
             socket.join(request)
@@ -345,7 +287,7 @@ describe('Discovery', () => {
         worker.streamJoin(channel, room, event, checkTest)
         let emitter = busFactory({
           name: channel,
-          id: 'emitter',
+          id: channel,
           serverListeners: {
             'streamJoinRequested': (socket, request) => {
               socket.join(request)

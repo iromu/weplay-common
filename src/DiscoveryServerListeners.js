@@ -4,6 +4,7 @@ class DiscoveryServerListeners {
   constructor(options) {
     this.service = {}
     this.ip = options.ip
+    this.options = options
     this._socket = options.socket
     this._services = options._services
     this._eventLog = options._eventLog
@@ -134,11 +135,9 @@ class DiscoveryServerListeners {
           event: request.event,
           by: requester.name
         })
-        logger.info('[%s] DiscoveryServerListeners.onDiscover', this.service.name, {
-          requested: request.channel,
-          room: request.room,
-          event: request.event,
-          by: JSON.stringify(requester.name)
+        logger.info('[%s] DiscoveryServerListeners.onDiscover', requester.name, {
+          request: request,
+          by: JSON.stringify(requester.id)
         })
 
         if (!requester.depends) {
@@ -157,7 +156,11 @@ class DiscoveryServerListeners {
         var discovered = this._services.filter(condition)[0]
 
         if (discovered) {
-          // logger.debug('> discovered', discovered)
+          logger.info('[%s] DiscoveryServerListeners.onDiscover', this.options.name, {
+            request: request,
+            discovered: discovered.id,
+            by: JSON.stringify(requester.id)
+          })
           this._socket.emit('discovered', {
             id: discovered.id,
             name: discovered.name,
@@ -171,6 +174,12 @@ class DiscoveryServerListeners {
           if (discovered) {
             // request the creation of the stream
             // logger.debug('> discovered', discovered)
+            logger.info('[%s] DiscoveryServerListeners.onDiscover', this.options.name, {
+              request: request,
+              discovered: discovered.id,
+              streams: discovered.rooms,
+              by: JSON.stringify(requester.id)
+            })
             this._socket.emit('discovered', {
               id: discovered.id,
               name: discovered.name,
@@ -189,11 +198,13 @@ class DiscoveryServerListeners {
         }
       },
       'streamCreateRequested': (request) => {
-        // logger.info('[%s] DiscoveryServer.streamCreateRequested DEFAULT', this.name, request)
-        this._socket.join(request)
+        logger.info('[%s] DiscoveryServer.onDiscover streamCreateRequested', this.options.name, request)
+        // Reject by default
+        // this._socket.emit('streamRejected', request)
       },
       'streamJoinRequested': (request) => {
-        // logger.info('[%s] DiscoveryServer.streamJoinRequested DEFAULT', this.name, request)
+        logger.info('[%s] DiscoveryServer.onDiscover streamJoinRequested ', this.options.name, request)
+        // Join by default
         this._socket.join(request)
       }
     }
