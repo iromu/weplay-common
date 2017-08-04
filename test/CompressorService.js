@@ -89,7 +89,7 @@ class CompressorService {
       socket.join(this.romHash);
       // Locate a raw frame stream supplier
       // channel, room, event, listener
-      this.bus.streamJoin('emu', this.romHash, 'frame', this.onRawFrame.bind(this));
+      this.bus.streamJoin('emu', this.romHash, 'frame' + this.romHash, this.onRawFrame.bind(this))
     } else {
       logger.error('EmulatorService.streamJoinRequested. Ignoring request for a new stream.', {
         socket: socket.id,
@@ -100,7 +100,7 @@ class CompressorService {
 
   sendFrame(frame) {
     this.ticker.tick();
-    this.bus.stream(this.romHash, 'frame', frame);
+    this.bus.stream(this.romHash, 'frame' + this.romHash, frame)
   }
 
   destroy() {

@@ -85,42 +85,44 @@ class EventBroker {
     if (!service.streamJoin) {
       // room, event, listener
       service.streamJoin = (room, event, listener) => {
-        var info = {service: service.name, room: room, event: event}
-        logger.debug('[%s] EventBroker service.streamJoin requesting ', this.name, info)
+        if (room) {
+          var info = {service: service.name, room: room, event: event}
+          logger.debug('[%s] EventBroker service.streamJoin requesting ', this.name, info)
 
-        if (!this.streamJoinHashes[service.name]) {
-          this.streamJoinHashes[service.name] = []
-        }
+          if (!this.streamJoinHashes[service.name]) {
+            this.streamJoinHashes[service.name] = []
+          }
 
-        if (!service.streamJoinHashes) {
-          service.streamJoinHashes = []
-        }
+          if (!service.streamJoinHashes) {
+            service.streamJoinHashes = []
+          }
 
-        if (!service.streamJoinHashes.includes(room)) {
-          service.streamJoinHashes.push(room)
-        }
+          if (!service.streamJoinHashes.includes(room)) {
+            service.streamJoinHashes.push(room)
+          }
 
-        if (!service.events) {
-          service.events = []
-        }
+          if (!service.events) {
+            service.events = []
+          }
 
-        var eventInfo = {room: room}
-        if (!service.events.includes(eventInfo)) {
-          service.events.push(eventInfo)
-        }
+          var eventInfo = {room: room}
+          if (!service.events.includes(eventInfo)) {
+            service.events.push(eventInfo)
+          }
 
-        if (!this.streamJoinHashes[service.name].includes(room)) {
-          this.streamJoinHashes[service.name].push(room)
-          if (event && listener) {
+          if (!this.streamJoinHashes[service.name].includes(room)) {
+            this.streamJoinHashes[service.name].push(room)
+            if (event && listener) {
+              service.socket.off(event)
+              service.socket.on(event, listener)
+            }
+          } else if (event && listener) {
             service.socket.off(event)
             service.socket.on(event, listener)
           }
-        } else if (event && listener) {
-          service.socket.off(event)
-          service.socket.on(event, listener)
-        }
 
-        service.socket.emit('streamJoinRequested', room)
+          service.socket.emit('streamJoinRequested', room)
+        }
       }
     }
 

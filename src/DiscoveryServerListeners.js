@@ -159,18 +159,20 @@ class DiscoveryServerListeners {
           logger.info('[%s] DiscoveryServerListeners.onDiscover', this.options.name, {
             request: request,
             discovered: discovered.id,
+            streams: discovered.rooms,
             by: JSON.stringify(requester.id)
           })
           this._socket.emit('discovered', {
             id: discovered.id,
             name: discovered.name,
+            streams: discovered.rooms,
             ip: discovered.ip,
             scheme: discovered.scheme,
             port: discovered.port
           })
         } else {
           // Find a this.service that supports creating the string
-          discovered = this._services.filter(s => s.name === request.channel).sort((a, b) => a.rooms.length > b.rooms.length)[0]
+          discovered = this._services.filter(s => s.name === request.channel).sort((a, b) => a.rooms.length > b.rooms.length ? 1 : -1)[0]
           if (discovered) {
             // request the creation of the stream
             // logger.debug('> discovered', discovered)
@@ -183,6 +185,7 @@ class DiscoveryServerListeners {
             this._socket.emit('discovered', {
               id: discovered.id,
               name: discovered.name,
+              streams: discovered.rooms,
               ip: discovered.ip,
               scheme: discovered.scheme,
               port: discovered.port

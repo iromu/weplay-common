@@ -121,7 +121,7 @@ class ImageService {
   sendFrame(frame) {
     this.ticker.tick()
     //this.logger.debug('sendFrame')
-    this.bus.stream(this.romHash, 'frame', frame)
+    this.bus.stream(this.romHash, 'frame' + this.romHash, frame)
     //this.bus.emit('compressor', 'frame', {hash: this.romHash, frame: frame})
   }
 

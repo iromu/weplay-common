@@ -114,7 +114,7 @@ class Server {
         } else {
           return {name: service.name, id: service.id, version: service.version}
         }
-      }).sort((a, b) => a.name > b.name))
+      }).sort((a, b) => a.name > b.name ? 1 : -1))
       next()
     }
 
