@@ -63,9 +63,7 @@ class DiscoveryServerStatus {
       } else {
         return {name: service.name, id: service.id, version: service.version}
       }
-    }).sort((a, b) => {
-      return a.name > b.name ? 1 : -1
-    }))
+    }).sort((a, b) => a.name > b.name ? 1 : -1))
     next()
   }
 }

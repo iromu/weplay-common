@@ -13,7 +13,7 @@ const destroyEmuTimeoutDelay = 10000
 class ImageService {
 
   constructor(discoveryUrl, discoveryPort) {
-    this.uuid = require('node-uuid').v4()
+    this.uuid = require('uuid/v1')()
     this.logger = require('../').logger('ImageService', this.uuid)
     this.name = 'image'
     this.emu = null

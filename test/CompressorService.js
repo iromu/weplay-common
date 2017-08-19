@@ -1,6 +1,6 @@
 /* eslint-disable*/
 
-const uuid = require('node-uuid').v4();
+const uuid = require('uuid/v1')()
 const logger = require('../').logger('compressor-service', uuid);
 const EventBus = require('../').EventBus;
 const fps = require('fps');
@@ -8,7 +8,7 @@ const fps = require('fps');
 class CompressorService {
 
   constructor(discoveryUrl, discoveryPort) {
-    this.uuid = require('node-uuid').v4();
+    this.uuid = require('uuid/v1')()
     this.pngquant = undefined;
     this.failures = 0;
     this.romHash = undefined;

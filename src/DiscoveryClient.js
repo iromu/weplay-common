@@ -1,5 +1,6 @@
 /* eslint-disable semi,space-before-function-paren,spaced-comment */
 // const logger = require('../index').logger('common-discovery')
+const os = require('os')
 const SocketClient = require('socket.io-client')
 let Server = require('./DiscoveryServer')
 
@@ -42,7 +43,7 @@ class Client {
         //    _onRegistered();
         //}
       })
-      this.socket.emit('register', {name: options.name, id: this.id, port: options.port})
+      this.socket.emit('register', {name: options.name, id: this.id, port: options.port, hostname: os.hostname()})
       this.announceListeners(options.serverListeners)
       this.announceListeners(this.server.getInternalListeners())
       if (_onConnect) {

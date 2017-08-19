@@ -4,7 +4,7 @@ const EventBus = require('../').EventBus
 
 class StoreService {
   constructor(discoveryUrl, discoveryPort) {
-    this.uuid = require('node-uuid').v4()
+    this.uuid = require('uuid/v1')()
     this.logger = require('../').logger('StoreService', this.uuid)
 
     const listeners = {

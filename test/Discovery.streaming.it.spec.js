@@ -279,7 +279,7 @@ describe('Discovery', () => {
             name: channel,
             event: 'disconnect',
             handler: () => {
-              worker.streamLeave(channel, room)
+              // worker.streamLeave(channel, room)
             }
           }
         ]

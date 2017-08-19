@@ -1,33 +1,33 @@
 #!/usr/bin/env bash
 
-npm link
+yarn link
 
 cd ../weplay
-npm link weplay-common
+yarn link weplay-common
 
 cd ../weplay-babel
-npm link weplay-common
+yarn link weplay-common
 
 cd ../weplay-compressor
-npm link weplay-common
+yarn link weplay-common
 
 cd ../weplay-emulator
-npm link weplay-common
+yarn link weplay-common
 
 cd ../weplay-presence
-npm link weplay-common
+yarn link weplay-common
 
 cd ../weplay-web
-npm link weplay-common
+yarn link weplay-common
 
 cd ../weplay-discovery
-npm link weplay-common
+yarn link weplay-common
 
 cd ../weplay-relay
-npm link weplay-common
+yarn link weplay-common
 
 cd ../weplay-discovery
-npm link weplay-common
+yarn link weplay-common
 
 cd ../weplay-rom
-npm link weplay-common
+yarn link weplay-common

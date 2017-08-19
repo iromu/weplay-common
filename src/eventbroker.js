@@ -58,6 +58,7 @@ class EventBroker {
       room: service.room,
       id: service.id,
       ip: service.ip,
+      hostname: service.hostname,
       scheme: service.scheme,
       port: service.port
     }

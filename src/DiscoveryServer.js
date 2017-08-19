@@ -16,7 +16,11 @@ class Server {
 
     logger.debug('[%s] DiscoveryServer constructor starting on port %s', options.name, options.port)
     var sio = require('socket.io')
-    this.io = sio()
+    this.io = sio({
+      pingInterval: 2000,
+      serveClient: false,
+      pingTimeout: 1000
+    })
     this._services = []
     this._eventLog = []
     this.listeners = options.serverListeners
@@ -34,7 +38,7 @@ class Server {
           }
         }
       }
-      this.discoveryServerListeners = new DiscoveryServerListeners({
+      let discoveryServerListeners = new DiscoveryServerListeners({
         ip: ip,
         name: this.name,
         io: this.io,
@@ -45,13 +49,13 @@ class Server {
         onAnnounceListener: this.onAnnounceListener
       })
       this.serverListeners = {
-        'disconnect': this.discoveryServerListeners.disconnect,
-        'register': this.discoveryServerListeners.register,
-        'announce': this.discoveryServerListeners.announce,
-        'unannounce': this.discoveryServerListeners.unannounce,
-        'discover': this.discoveryServerListeners.discover,
-        'streamCreateRequested': this.discoveryServerListeners.streamCreateRequested,
-        'streamJoinRequested': this.discoveryServerListeners.streamJoinRequested
+        'disconnect': request => discoveryServerListeners.disconnect(request),
+        'register': request => discoveryServerListeners.register(request),
+        'announce': request => discoveryServerListeners.announce(request),
+        'unannounce': request => discoveryServerListeners.unannounce(request),
+        'discover': request => discoveryServerListeners.discover(request),
+        'streamCreateRequested': request => discoveryServerListeners.streamCreateRequested(request),
+        'streamJoinRequested': request => discoveryServerListeners.streamJoinRequested(request)
       }
 
       // TODO auto extend instead of omitting
@@ -105,6 +109,8 @@ class Server {
           })
           return {
             name: service.name,
+            hostname: service.hostname,
+            port: service.port,
             id: service.id,
             version: service.version,
             events: events,
