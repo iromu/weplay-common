@@ -1,11 +1,11 @@
 FROM node:8
 
+# Install app dependencies
+RUN npm -g i yarn
+
 # Create app directory
 RUN mkdir -p /usr/src/app/common
 WORKDIR /usr/src/app/common
-
-# Install app dependencies
-RUN npm -g i yarn
 
 COPY . .
 

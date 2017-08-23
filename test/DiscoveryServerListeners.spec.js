@@ -142,7 +142,12 @@ describe('DiscoveryServerListeners', () => {
       const discoveryServerListeners = new DiscoveryServerListeners({
         ip: 'ip',
         name: 'test',
-        io: 'io',
+        io: {
+          'emit': (event, data) => {
+            expect(event).to.be.equal('streamCreateRequested')
+            expect(data).to.be.equal('test room')
+          }
+        },
         socket: {
           'emit': (event, data) => {
             expect(data.name).to.be.equal('service')
@@ -201,6 +206,7 @@ describe('DiscoveryServerListeners', () => {
       const times = 10
       let responses = 0
       let _services = []
+      let expectedPressureByName = {}
       const discoveryServerListeners = new DiscoveryServerListeners({
         ip: 'ip',
         name: 'test',
@@ -208,7 +214,14 @@ describe('DiscoveryServerListeners', () => {
         socket: {
           'emit': (event, data) => {
             console.log(data.pressure)
+            if (!expectedPressureByName[data.id]) {
+              expectedPressureByName[data.id] = 1
+            } else {
+              expectedPressureByName[data.id]++
+            }
             expect(data.name).to.be.equal('service')
+            expect(data.pressure).to.be.equal(expectedPressureByName[data.id])
+            expect(data.pressure).to.not.be.greaterThan(5)
             expect(data.streams).to.be.deep.equal(['test room'])
             responses++
             if (responses === times - 1) {
@@ -218,9 +231,9 @@ describe('DiscoveryServerListeners', () => {
         },
         _services: _services,
       })
-      _services.push({id: '1', name: 'service', rooms: ['test room']})
-      _services.push({id: '2', name: 'service', rooms: ['test room']})
-      _services.push({id: '3', name: 'service', rooms: ['test room']})
+      _services.push({id: '1', name: 'service', rooms: ['test room'], pressure: 0})
+      _services.push({id: '2', name: 'service', rooms: ['test room'], pressure: 0})
+      _services.push({id: '3', name: 'service', rooms: ['test room'], pressure: 0})
 
       Array(times).join('x').split('').forEach(() => {
         discoveryServerListeners.discover({channel: 'service', room: 'test room'})

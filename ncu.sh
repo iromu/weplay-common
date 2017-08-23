@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
 
+cd ../gameboy
+ncu -u --loglevel verbose --packageFile package.json
+
+cd ../node-nes
+ncu -u --loglevel verbose --packageFile package.json
+
 cd ../weplay
 ncu -u --loglevel verbose --packageFile package.json
 

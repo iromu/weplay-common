@@ -22,6 +22,7 @@ class DiscoveryServerListeners {
     this.service = {
       name: _service.name,
       id: _service.id,
+      pressure: 0,
       socket: this._socket.id,
       hostname: _service.hostname,
       ip: this.ip, // current socket ip
@@ -114,34 +115,31 @@ class DiscoveryServerListeners {
       event: request.event,
       by: requester.name
     })
-    logger.info('[%s] DiscoveryServer.onDiscover', this.options.name, {
-      request: request,
-      by: JSON.stringify(requester.id)
-    })
-
+    logger.info('[%s] DiscoveryServer.onDiscover', this.options.name, {request: request, by: requester.id})
     if (!requester.depends) {
       requester.depends = []
     }
     if (!requester.depends.includes(request)) {
       requester.depends.push(request)
     }
-    // const discovered = this._services.filter(service=>service.name === request.channel)[0]
-
-    // const matchesRoom = this.service => this.service.name === request.channel && this.service.rooms.includes(request.room)
     const matchesRoom = s => s.name === request.channel && (s.rooms === undefined || s.rooms === [] || s.rooms.includes(request.room))
     const matchesName = s => s.name === request.channel
 
-    const condition = (request.room) ? matchesRoom : matchesName
+    const matchesRoomOrName = (request.room) ? matchesRoom : matchesName
 
-    let discoveredList = this._services.filter(condition)
-    let discovered = discoveredList[Math.floor(Math.random() * discoveredList.length)]
+    const byPressure = (a, b) => a.pressure > b.pressure ? 1 : -1
+    const byRoomLength = (a, b) => a.rooms.length > b.rooms.length ? 1 : -1
+
+    let discoveredList = this._services.filter(matchesRoomOrName)
+    let discovered = discoveredList.sort(byPressure)[0]
 
     if (discovered) {
-      discovered.pressure = discovered.pressure ? discovered.pressure : 1
+      discovered.pressure = discovered.pressure ? discovered.pressure + 1 : 1
       logger.info('[%s] DiscoveryServer.onDiscover contains stream', this.options.name, {
         request: request,
         discovered: discovered.id,
         name: discovered.name,
+        pressure: discovered.pressure,
         hostname: discovered.hostname,
         ip: discovered.ip,
         streams: discovered.rooms,
@@ -150,6 +148,7 @@ class DiscoveryServerListeners {
       this._socket.emit('discovered', {
         id: discovered.id,
         name: discovered.name,
+        pressure: discovered.pressure,
         streams: discovered.rooms,
         ip: discovered.ip,
         hostname: discovered.hostname,
@@ -158,20 +157,21 @@ class DiscoveryServerListeners {
       })
     } else {
       // Find a this.service that supports creating the string
-      discoveredList = this._services.filter(s => s.name === request.channel).sort((a, b) => a.rooms.length > b.rooms.length ? 1 : -1)
+      discoveredList = this._services.filter(s => s.name === request.channel).sort(byRoomLength)
       if (discoveredList) {
         const discoveredEmptyList = discoveredList.filter(s => !s.rooms || s.rooms.length === 0)
 
         if (discoveredEmptyList && discoveredEmptyList.length > 0) {
-          discovered = discoveredEmptyList[Math.floor(Math.random() * discoveredEmptyList.length)]
+          discovered = discoveredEmptyList.sort(byPressure)[0]
         } else if (discoveredList.length > 1) {
-          discovered = discoveredList[Math.floor(Math.random() * discoveredList.length)]
+          // discovered = discoveredList[Math.floor(Math.random() * discoveredList.length)]
+          discovered = discoveredList.sort(byPressure)[0]
         } else {
           discovered = discoveredList[0]
         }
 
         if (discovered) {
-          discovered.pressure = discovered.pressure ? discovered.pressure : 1
+          discovered.pressure = discovered.pressure ? discovered.pressure + 1 : 1
           // Add the stream before the service accepts its creation
           // A streamRejected event should clear this value
           // discovered.rooms.push(request.room)
@@ -182,6 +182,7 @@ class DiscoveryServerListeners {
             discovered: discovered.id,
             id: discovered.id,
             name: discovered.name,
+            pressure: discovered.pressure,
             hostname: discovered.hostname,
             ip: discovered.ip,
             streams: discovered.rooms,
@@ -190,6 +191,7 @@ class DiscoveryServerListeners {
           this._socket.emit('discovered', {
             id: discovered.id,
             name: discovered.name,
+            pressure: discovered.pressure,
             hostname: discovered.hostname,
             ip: discovered.ip,
             streams: discovered.rooms,
