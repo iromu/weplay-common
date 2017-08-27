@@ -1,21 +1,22 @@
-const logger = require('./logger')('common-discovery')
+import forwarded from 'forwarded-for'
+import DiscoveryServerListeners from './DiscoveryServerListeners'
+import LoggerFactory from './LoggerFactory'
 
-const forwarded = require('forwarded-for')
-const DiscoveryServerListeners = require('./DiscoveryServerListeners')
+const logger = LoggerFactory.get('common-discovery')
 
 class Server {
   constructor(options, cb) {
     this.options = options
     this.name = options.name
-    var port = options.port
-    var statusPort = options.statusPort
+    const port = options.port
+    const statusPort = options.statusPort
 
     if (statusPort) {
       this.createRestServer(statusPort)
     }
 
     logger.debug('[%s] DiscoveryServer constructor starting on port %s', options.name, options.port)
-    var sio = require('socket.io')
+    const sio = require('socket.io')
     this.io = sio({
       pingInterval: 2000,
       serveClient: false,
@@ -31,7 +32,7 @@ class Server {
       const ip = forwarded(req, req.headers).ip.split(':').pop()
       // Subscribe to listeners
       if (this.listeners) {
-        for (var event in this.listeners) {
+        for (const event in this.listeners) {
           if (this.listeners.hasOwnProperty(event)) {
             const handler = this.listeners[event]
             this.subscribe(socket, event, handler)
@@ -39,10 +40,10 @@ class Server {
         }
       }
       let discoveryServerListeners = new DiscoveryServerListeners({
-        ip: ip,
+        ip,
         name: this.name,
         io: this.io,
-        socket: socket,
+        socket,
         _services: this._services,
         _eventLog: this._eventLog,
         onRegisterListener: this.onRegisterListener,
@@ -67,7 +68,7 @@ class Server {
         delete this.serverListeners['streamJoinRequested']
       }
 
-      for (var serverEvent in this.serverListeners) {
+      for (const serverEvent in this.serverListeners) {
         if (this.serverListeners.hasOwnProperty(serverEvent)) {
           const handler = this.serverListeners[serverEvent]
           socket.on(serverEvent, handler)
@@ -81,10 +82,10 @@ class Server {
   }
 
   createRestServer(statusPort) {
-    var restify = require('restify')
+    const restify = require('restify')
 
     function csvHandler(req, res, next) {
-      var sendHeader = true
+      let sendHeader = true
       res.send(this.eventLog().map(log => {
         if (sendHeader) {
           sendHeader = false
@@ -102,7 +103,7 @@ class Server {
       res.send(this._services.map(service => {
         if (service.events) {
           const events = service.events.map(e => {
-            return (e.room) ? e.event + '#' + e.room : e.event
+            return (e.room) ? `${e.event}#${e.room}` : e.event
           })
           const streams = service.events.filter(e => e.room).map(e => {
             return e.room
@@ -113,7 +114,7 @@ class Server {
             port: service.port,
             id: service.id,
             version: service.version,
-            events: events,
+            events,
             streams: Array.from(new Set(streams)),
             depends: service.depends
           }
@@ -124,7 +125,7 @@ class Server {
       next()
     }
 
-    var server = restify.createServer({
+    const server = restify.createServer({
       formatters: {
         'application/json': (req, res, body) => JSON.stringify(body, null, '\t')
       }
@@ -192,4 +193,4 @@ class Server {
   }
 }
 
-module.exports = Server
+export default Server

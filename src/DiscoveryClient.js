@@ -1,8 +1,9 @@
 /* eslint-disable semi,space-before-function-paren,spaced-comment */
 // const logger = require('../index').logger('common-discovery')
-const os = require('os')
-const SocketClient = require('socket.io-client')
-let Server = require('./DiscoveryServer')
+import os from 'os'
+
+import SocketClient from 'socket.io-client'
+import Server from './DiscoveryServer'
 
 class Client {
   constructor(options, _onConnect) {
@@ -63,13 +64,13 @@ class Client {
   }
 
   announceListeners(listeners) {
-    for (var event in listeners) {
+    for (const event in listeners) {
       if (listeners.hasOwnProperty(event)) {
         this.socket.emit('announce', {
           name: this.name,
           id: this.id,
           port: this.options.port,
-          event: event
+          event
         })
       }
     }
@@ -77,13 +78,13 @@ class Client {
 
   subscribe(event, listener) {
     // logger.debug('+ discovery client subscribe()', {event: event})
-    this.socket.on(event, function (data) {
+    this.socket.on(event, data => {
       listener(data)
     })
   }
 
   emit(...args) {
-    this.socket.emit.apply(this.socket, args)
+    this.socket.emit(...args)
   }
 
   // Creates/Emit a private stream of events
@@ -99,7 +100,7 @@ class Client {
         name: this.options.name,
         id: this.id,
         port: this.options.port,
-        room: room,
+        room,
         event: 'streamJoinRequested'
       })
 
@@ -107,8 +108,8 @@ class Client {
         name: this.options.name,
         id: this.id,
         port: this.options.port,
-        room: room,
-        event: event
+        room,
+        event
       })
     }
 
@@ -122,8 +123,8 @@ class Client {
       name: this.options.name,
       id: this.id,
       port: this.options.port,
-      room: room,
-      event: event
+      room,
+      event
     })
     // private push
     this.server.to(room).emit('destroy', room)
@@ -135,4 +136,4 @@ class Client {
   }
 }
 
-module.exports = Client
+export default Client

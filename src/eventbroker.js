@@ -1,5 +1,7 @@
 /* eslint-disable semi,spaced-comment */
-const logger = require('./logger')('common-eventbroker')
+import LoggerFactory from './LoggerFactory'
+
+const logger = LoggerFactory.get('common-discovery')
 
 // const _ = require('lodash')
 
@@ -87,7 +89,7 @@ class EventBroker {
       // room, event, listener
       service.streamJoin = (room, event, listener) => {
         if (room) {
-          var info = {service: service.name, room: room, event: event}
+          const info = {service: service.name, room, event}
           logger.debug('[%s] EventBroker service.streamJoin requesting ', this.name, info)
 
           if (!this.streamJoinHashes[service.name]) {
@@ -106,7 +108,7 @@ class EventBroker {
             service.events = []
           }
 
-          var eventInfo = {room: room}
+          const eventInfo = {room}
           if (!service.events.includes(eventInfo)) {
             service.events.push(eventInfo)
           }
@@ -129,8 +131,8 @@ class EventBroker {
 
     if (!service.streamLeave) {
       service.streamLeave = (room) => {
-        var info = {service: service.name, room: room}
-        var channel = service.name
+        const info = {service: service.name, room}
+        const channel = service.name
         logger.debug('[%s] EventBroker service.streamLeave requesting ', this.name, info)
 
         if (!this.streamJoinHashes[channel]) {
@@ -210,7 +212,7 @@ class EventBroker {
     const matchesName = service => service.name === channel
 
     const condition = (room) ? matchesRoom : matchesName
-    var service = this._services.filter(condition)[0]
+    const service = this._services.filter(condition)[0]
     if (!service && !this.queue[channel]) {
       this.queue[channel] = {emit: [], on: [], streamJoin: [], streamLeave: []}
     } else {
@@ -220,11 +222,11 @@ class EventBroker {
 
   emit(channel, event, data, room) {
     // logger.debug('[%s] EventBroker[channel:%s] 1 emit event:%s', this.name, channel, event)
-    var service = this.getService(channel, room)
+    const service = this.getService(channel, room)
     if (!service) {
-      this.queue[channel].emit.push({event: event, data: data})
+      this.queue[channel].emit.push({event, data})
       // Ask discovery service for the location of this service.
-      this.discoveryClient.emit('discover', {channel: channel})
+      this.discoveryClient.emit('discover', {channel})
 
       // logger.debug('[%s] EventBroker[channel:%s] 1.1 emit event:%s', this.name, channel, event)
     } else {
@@ -247,12 +249,12 @@ class EventBroker {
   }
 
   publish(channel, room, event, data) {
-    var service = this.getService(channel, room)
+    const service = this.getService(channel, room)
     if (!service) {
       // Ask discovery service for the location of this stream.
       logger.debug('[%s] EventBroker [%s.%s] streamJoin ASK %s', this.name, channel, room, event)
-      this.queue[channel].streamJoin.push({room: room, event: event})
-      this.discoveryClient.emit('discover', {channel: channel, room: room})
+      this.queue[channel].streamJoin.push({room, event})
+      this.discoveryClient.emit('discover', {channel, room})
       // this.discoveryClient.emit('streamCreateRequested', {channel: channel, room: room})
 
       // Ask discovery service for the location of this service.
@@ -265,12 +267,12 @@ class EventBroker {
   }
 
   streamJoin(channel, room, event, listener) {
-    var service = this.getService(channel, room)
+    const service = this.getService(channel, room)
     if (!service) {
       // Ask discovery service for the location of this stream.
       logger.debug('[%s] EventBroker [%s.%s] streamJoin ASK %s', this.name, channel, room, event)
-      this.queue[channel].streamJoin.push({room: room, event: event, listener: listener})
-      this.discoveryClient.emit('discover', {channel: channel, room: room})
+      this.queue[channel].streamJoin.push({room, event, listener})
+      this.discoveryClient.emit('discover', {channel, room})
       // this.discoveryClient.emit('streamCreateRequested', {channel: channel, room: room})
 
       // Ask discovery service for the location of this service.
@@ -283,7 +285,7 @@ class EventBroker {
   }
 
   streamLeave(channel, room) {
-    var service = this.getService(channel, room)
+    const service = this.getService(channel, room)
     if (!service) {
       logger.error('[%s] EventBroker [%s.%s] streamLeave ERROR!!!', this.name, channel, room)
     } else {
@@ -293,9 +295,9 @@ class EventBroker {
   }
 
   on(channel, event, callback) {
-    var service = this.getService(channel)
+    const service = this.getService(channel)
     if (!service) {
-      this.queue[channel].on.push({event: event, callback: callback})
+      this.queue[channel].on.push({event, callback})
     } else {
       service.on(event, callback)
     }
@@ -311,4 +313,4 @@ class EventBroker {
   }
 }
 
-module.exports = EventBroker
+export default EventBroker

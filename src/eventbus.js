@@ -1,5 +1,5 @@
-const Discovery = require('./discovery')
-const EventBroker = require('./eventbroker')
+import Discovery from './discovery'
+import EventBroker from './eventbroker'
 
 class EventBus {
   constructor(options, _onConnect) {
@@ -57,4 +57,4 @@ class EventBus {
   }
 }
 
-module.exports = EventBus
+export default EventBus

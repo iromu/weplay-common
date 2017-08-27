@@ -1,17 +1,13 @@
-/* eslint-disable no-undef */
-'use strict'
-
-let ports = require('./common.spec')
+import ports from './common.spec'
+import EventBus from '../src/eventbus'
+import Discovery from '../src/discovery'
 
 process.env.NODE_ENV = 'test'
-
-const EventBus = require('../src/eventbus')
-const Discovery = require('../src/discovery')
 
 let serviceCleanup = []
 let discovery
 let discoveryPort = ports.pop()
-const discoveryUrl = 'http://localhost:' + discoveryPort
+const discoveryUrl = `http://localhost:${discoveryPort}`
 
 describe('Discovery', () => {
   beforeEach((done) => {

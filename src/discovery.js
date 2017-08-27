@@ -1,5 +1,5 @@
-const Server = require('./DiscoveryServer')
-const Client = require('./DiscoveryClient')
+import Server from './DiscoveryServer'
+import Client from './DiscoveryClient'
 
 class Discovery {
   server(options, cb) {
@@ -18,4 +18,4 @@ class Discovery {
   }
 }
 
-module.exports = Discovery
+export default Discovery

@@ -1,9 +1,5 @@
-/* eslint-disable */
-
-'use strict'
-
 require('./common.spec')
-const DiscoveryServerListeners = require('../src/DiscoveryServerListeners')
+import DiscoveryServerListeners from '../src/DiscoveryServerListeners'
 
 describe('DiscoveryServerListeners', () => {
   describe('register', () => {
@@ -33,7 +29,7 @@ describe('DiscoveryServerListeners', () => {
             expect(data).to.be.equal(service.name)
           }
         },
-        _services: _services,
+        _services,
         onRegisterListener: s => {
           expect(s.name).to.be.equal(service.name)
           done()
@@ -69,7 +65,7 @@ describe('DiscoveryServerListeners', () => {
             fail()
           }
         },
-        _services: _services,
+        _services,
         onRegisterListener: s => {
           fail()
         }
@@ -93,7 +89,7 @@ describe('DiscoveryServerListeners', () => {
             done()
           }
         },
-        _services: _services,
+        _services,
       })
       _services.push({id: '1', name: 'service'})
       discoveryServerListeners.discover({channel: 'service'})
@@ -112,7 +108,7 @@ describe('DiscoveryServerListeners', () => {
             done()
           }
         },
-        _services: _services,
+        _services,
       })
       _services.push({id: 'id 1', name: 'service'})
       discoveryServerListeners.discover({channel: 'service', room: 'test room'})
@@ -130,7 +126,7 @@ describe('DiscoveryServerListeners', () => {
             done()
           }
         },
-        _services: _services,
+        _services,
       })
       _services.push({id: 'id 1', name: 'service'})
       _services.push({id: 'id 2', name: 'service'})
@@ -156,7 +152,7 @@ describe('DiscoveryServerListeners', () => {
             done()
           }
         },
-        _services: _services,
+        _services,
       })
       _services.push({id: '1', name: 'service', rooms: ['test room 2']})
       _services.push({id: '2', name: 'service', rooms: []})
@@ -177,7 +173,7 @@ describe('DiscoveryServerListeners', () => {
             done()
           }
         },
-        _services: _services,
+        _services,
       })
       _services.push({id: '1', name: 'service', rooms: ['test room']})
       discoveryServerListeners.discover({channel: 'service', room: 'test room'})
@@ -195,7 +191,7 @@ describe('DiscoveryServerListeners', () => {
             done()
           }
         },
-        _services: _services,
+        _services,
       })
       _services.push({id: '1', name: 'service', rooms: ['test room1']})
       _services.push({id: '2', name: 'service', rooms: ['test room']})
@@ -229,7 +225,7 @@ describe('DiscoveryServerListeners', () => {
             }
           }
         },
-        _services: _services,
+        _services,
       })
       _services.push({id: '1', name: 'service', rooms: ['test room'], pressure: 0})
       _services.push({id: '2', name: 'service', rooms: ['test room'], pressure: 0})

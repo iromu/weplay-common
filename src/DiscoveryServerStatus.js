@@ -1,14 +1,16 @@
-const logger = require('./logger')('common-discovery')
-const util = require('util')
+import util from 'util'
+import LoggerFactory from './LoggerFactory'
+
+const logger = LoggerFactory.get('common-discovery')
 
 class DiscoveryServerStatus {
   constructor(options) {
     this._services = options._services
     this._eventLog = options._eventLog
     if (options.statusPort) {
-      var restify = require('restify')
+      const restify = require('restify')
 
-      var server = restify.createServer({
+      const server = restify.createServer({
         formatters: {
           'application/json': (req, res, body, cb) => cb(null, util.inspect(body, null, '\t'))
         }
@@ -29,7 +31,7 @@ class DiscoveryServerStatus {
   }
 
   csvHandler(req, res, next) {
-    var sendHeader = true
+    let sendHeader = true
     res.send(this._eventLog.map(log => {
       if (sendHeader) {
         sendHeader = false
@@ -47,16 +49,16 @@ class DiscoveryServerStatus {
     res.send(this._services.map(service => {
       if (service.events) {
         const events = service.events.map(e => {
-          return (e.room) ? e.event + '#' + e.room : e.event
+          return (e.room) ? `${e.event}#${e.room}` : e.event
         })
-        var streams = service.events.filter(e => e.room !== undefined).map(e => {
+        const streams = service.events.filter(e => e.room !== undefined).map(e => {
           return e.room
         })
         return {
           name: service.name,
           id: service.id,
           version: service.version,
-          events: events,
+          events,
           streams: Array.from(new Set(streams)),
           depends: service.depends
         }
@@ -68,4 +70,4 @@ class DiscoveryServerStatus {
   }
 }
 
-module.exports = DiscoveryServerStatus
+export default DiscoveryServerStatus

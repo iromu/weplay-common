@@ -4,11 +4,9 @@ class Store {
   constructor() {
 
   }
-
-
   destroy() {
 
   }
 }
 
-module.exports = Store;
+export default Store

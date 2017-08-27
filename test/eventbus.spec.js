@@ -7,7 +7,7 @@ require('./common.spec')
 const EventBus = require('../src/eventbus')
 const Discovery = require('../src/discovery')
 const EventBroker = require('../src/eventbroker')
-const Logger = require('../src/logger')
+const LoggerFactory = require('../src/LoggerFactory')
 const DefaultGreeting = 'Hello World';
 const Arg1 = {name: 'Hello'};
 const Arg2 = () => {

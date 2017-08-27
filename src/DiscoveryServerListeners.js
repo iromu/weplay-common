@@ -1,4 +1,6 @@
-const logger = require('./logger')('common-discovery')
+import LoggerFactory from './LoggerFactory'
+
+const logger = LoggerFactory.get('common-discovery')
 
 class DiscoveryServerListeners {
   constructor(options) {
@@ -32,7 +34,7 @@ class DiscoveryServerListeners {
       port: _service.port
     }
 
-    var discovered = this._services.filter(s => s.id === this.service.id)[0]
+    const discovered = this._services.filter(s => s.id === this.service.id)[0]
 
     if (!discovered) {
       logger.info('[%s] DiscoveryServer.onRegister', this.options.name, this.service)
@@ -50,7 +52,7 @@ class DiscoveryServerListeners {
   }
 
   announce(_service) {
-    var eventData = {name: _service.name, event: _service.event, room: _service.room, id: _service.id}
+    const eventData = {name: _service.name, event: _service.event, room: _service.room, id: _service.id}
     eventData.room || delete eventData.room
 
     logger.debug('[%s] DiscoveryServer.onAnnounce', this.options.name, eventData)
@@ -75,10 +77,10 @@ class DiscoveryServerListeners {
 
   unannounce(_service) {
     logger.info('[%s] DiscoveryServer.unannounce', this.options.name, _service)
-    var channel = _service.name
-    var room = _service.room
-    var id = _service.id
-    var event = _service.event
+    const channel = _service.name
+    const room = _service.room
+    const id = _service.id
+    const event = _service.event
     if (room || event) {
       this._services
         .filter(e => e.id === id)
@@ -107,7 +109,7 @@ class DiscoveryServerListeners {
   }
 
   discover(request) {
-    var requester = this._services.filter(s => s.socket === this._socket.id)[0]
+    let requester = this._services.filter(s => s.socket === this._socket.id)[0]
     requester = requester || {id: 'self', name: 'self'}
     this._eventLog && this._eventLog.push({
       requested: request.channel,
@@ -115,7 +117,7 @@ class DiscoveryServerListeners {
       event: request.event,
       by: requester.name
     })
-    logger.info('[%s] DiscoveryServer.onDiscover', this.options.name, {request: request, by: requester.id})
+    logger.info('[%s] DiscoveryServer.onDiscover', this.options.name, {request, by: requester.id})
     if (!requester.depends) {
       requester.depends = []
     }
@@ -136,7 +138,7 @@ class DiscoveryServerListeners {
     if (discovered) {
       discovered.pressure = discovered.pressure ? discovered.pressure + 1 : 1
       logger.info('[%s] DiscoveryServer.onDiscover contains stream', this.options.name, {
-        request: request,
+        request,
         discovered: discovered.id,
         name: discovered.name,
         pressure: discovered.pressure,
@@ -178,7 +180,7 @@ class DiscoveryServerListeners {
           // request the creation of the stream
           // logger.debug('> discovered', discovered)
           logger.info('[%s] DiscoveryServer.onDiscover supports stream', this.options.name, {
-            request: request,
+            request,
             discovered: discovered.id,
             id: discovered.id,
             name: discovered.name,
@@ -223,4 +225,4 @@ class DiscoveryServerListeners {
   }
 }
 
-module.exports = DiscoveryServerListeners
+export default DiscoveryServerListeners

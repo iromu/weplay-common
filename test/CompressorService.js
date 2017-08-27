@@ -1,8 +1,8 @@
 /* eslint-disable*/
 
 const uuid = require('uuid/v1')()
-const logger = require('../').logger('compressor-service', uuid);
-const EventBus = require('../').EventBus;
+const logger = require('../src').LoggerFactory.get('compressor-service', uuid)
+const EventBus = require('../src').EventBus
 const fps = require('fps');
 
 class CompressorService {

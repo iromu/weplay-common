@@ -9,8 +9,7 @@ WORKDIR /usr/src/app/common
 
 COPY . .
 
-RUN yarn --production
-
+RUN yarn
 RUN yarn link
 
 RUN apt-get clean

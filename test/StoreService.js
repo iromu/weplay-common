@@ -5,7 +5,7 @@ const EventBus = require('../').EventBus
 class StoreService {
   constructor(discoveryUrl, discoveryPort) {
     this.uuid = require('uuid/v1')()
-    this.logger = require('../').logger('StoreService', this.uuid)
+    this.logger = require('../').LoggerFactory.get('StoreService', this.uuid)
 
     const listeners = {
       'query': (socket, request) => {

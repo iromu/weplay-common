@@ -1,18 +1,14 @@
-/* eslint-disable no-undef */
-'use strict'
+import ports from './common.spec'
+import uuidv1 from 'uuid/v1'
+import EventBus from '../src/eventbus'
+import Discovery from '../src/discovery'
 
-let ports = require('./common.spec')
-
-const uuidv1 = require('uuid/v1')
 process.env.NODE_ENV = 'test'
-
-const EventBus = require('../src/eventbus')
-const Discovery = require('../src/discovery')
 
 let serviceCleanup = []
 let discovery
 let discoveryPort = ports.pop()
-const discoveryUrl = 'http://localhost:' + discoveryPort
+const discoveryUrl = `http://localhost:${discoveryPort}`
 
 describe('Discovery', () => {
   beforeEach((done) => {
@@ -37,13 +33,13 @@ describe('Discovery', () => {
   }
 
   describe('onStreaming', () => {
-    let channel = 'emitter' + uuidv1()
-    let room = 'room1' + uuidv1()
-    let event = 'event1' + uuidv1()
+    let channel = `emitter${uuidv1()}`
+    let room = `room1${uuidv1()}`
+    let event = `event1${uuidv1()}`
     beforeEach(() => {
-      channel = 'emitter' + uuidv1()
-      room = 'room1' + uuidv1()
-      event = 'event1' + uuidv1()
+      channel = `emitter${uuidv1()}`
+      room = `room1${uuidv1()}`
+      event = `event1${uuidv1()}`
     })
     afterEach((done) => {
       serviceCleanup.forEach((clean) => {
@@ -54,7 +50,7 @@ describe('Discovery', () => {
     })
     it('should announce stream events', (done) => {
       let emitter
-      let expectedEvents = [{event: 'streamJoinRequested', room: room}, {event: event, room: room}]
+      let expectedEvents = [{event: 'streamJoinRequested', room}, {event, room}]
       let expectedEventsCounter = expectedEvents.length
       discovery.onAnnounce((service) => {
         service.events.forEach((event) => {
@@ -161,7 +157,7 @@ describe('Discovery', () => {
       let onWorkerStreamJoined = (data) => {
         if (data === 'Joined') {
           // Send message to emitter through room
-          worker.emit({channel: channel, room: room, event: event, data: 'Hello'})
+          worker.emit({channel, room, event, data: 'Hello'})
         } else if (data === 'Hello') {
           done()
         } else {
@@ -207,7 +203,7 @@ describe('Discovery', () => {
         serverListeners: {
           'streamJoinRequested': (socket, request) => {
             socket.join(request)
-            emitter.stream(request, event, 'data J' + i)
+            emitter.stream(request, event, `data J${i}`)
           }
         }
       }
@@ -220,7 +216,7 @@ describe('Discovery', () => {
         emitterIsReconnecting = true
         emitter.destroy()
         emitter = busFactory(emitterConfig, () => {
-          emitter.stream(room, event, 'data J' + i++)
+          emitter.stream(room, event, `data J${i++}`)
         })
       }
 
@@ -260,7 +256,7 @@ describe('Discovery', () => {
       event = 'eventRec2'
       let i = 0
       let checkTest = (data) => {
-        expect(data).to.be.equal('data J' + i++)
+        expect(data).to.be.equal(`data J${i++}`)
         done()
       }
       let worker
@@ -291,7 +287,7 @@ describe('Discovery', () => {
           serverListeners: {
             'streamJoinRequested': (socket, request) => {
               socket.join(request)
-              emitter.stream(request, event, 'data J' + i++)
+              emitter.stream(request, event, `data J${i++}`)
             },
             'streamCreateRequested': (socket, request) => {
               socket.join(request)
