@@ -24,8 +24,8 @@ node('node') {
          print "Environment will be : ${env.NODE_ENV}"
 
          sh 'node -v'
-         sh 'npm install'
-         sh 'npm build'
+         sh 'yarn install'
+         sh 'yarn'
 
        }
 
@@ -35,15 +35,13 @@ node('node') {
 
          print "Environment will be : ${env.NODE_ENV}"
 
-         sh 'npm test'
+         sh 'yarn test'
 
        }
 
        stage('Cleanup'){
 
          echo 'prune and cleanup'
-         sh 'npm prune'
-         sh 'rm node_modules -rf'
 
        }
 
