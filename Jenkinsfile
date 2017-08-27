@@ -11,6 +11,12 @@ node('node') {
           checkout scm
        }
 
+        stage('Initialize') {
+            echo 'Initializing...'
+            def node = tool name: 'Node-8.4.0', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+            env.PATH = "${node}/bin:${env.PATH}"
+        }
+
        stage('Build'){
 
          env.NODE_ENV = "test"
