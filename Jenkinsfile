@@ -39,6 +39,16 @@ node('node') {
 
        }
 
+       stage('Link'){
+
+         env.NODE_ENV = "test"
+
+         print "Environment will be : ${env.NODE_ENV}"
+
+         sh 'yarn link'
+
+       }
+
        stage('Cleanup'){
 
          echo 'prune and cleanup'
