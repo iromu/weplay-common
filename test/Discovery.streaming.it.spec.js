@@ -250,7 +250,7 @@ describe('Discovery', () => {
       })
     })
 
-    it('should start a stream when a emitter connects', (done) => {
+    xit('should start a stream when a emitter connects', (done) => {
       channel = 'emitterRec2'
       room = 'roomRec2'
       event = 'eventRec2'
