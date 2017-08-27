@@ -45,11 +45,6 @@ node('node') {
          sh 'npm prune'
          sh 'rm node_modules -rf'
 
-         mail body: 'project build successful',
-                     from: 'wantez@gmail.com',
-                     replyTo: 'wantez@gmail.com',
-                     subject: 'project build successful',
-                     to: 'wantez@gmail.com'
        }
 
 
@@ -58,12 +53,6 @@ node('node') {
     catch (err) {
 
         currentBuild.result = "FAILURE"
-
-            mail body: "project build error is here: ${env.BUILD_URL}" ,
-            from: 'wantez@gmail.com',
-            replyTo: 'wantez@gmail.com',
-            subject: 'project build failed',
-            to: 'wantez@gmail.com'
 
         throw err
     }
