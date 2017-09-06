@@ -22,28 +22,24 @@ pipeline {
 
        stage('Test'){
          steps {
+            sh 'yarn plato'
             sh 'yarn ci-test'
             junit 'artifacts/test/xunit.xml'
          }
        }
 
-       stage('Link'){
-         steps {
-            sh 'yarn link'
-         }
-       }
-
        stage('Archive'){
          steps {
+            sh 'yarn link'
             sh 'yarn pack'
             archiveArtifacts '*.tgz'
             publishHTML (target: [
                   allowMissing: false,
                   alwaysLinkToLastBuild: false,
                   keepAll: true,
-                  reportDir: 'coverage/lcov-report',
+                  reportDir: 'report/plato',
                   reportFiles: 'index.html',
-                  reportName: "Coverage Report"
+                  reportName: "Plato Report"
                 ])
          }
        }
