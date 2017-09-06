@@ -24,8 +24,8 @@ node('node') {
 
        stage('Test'){
          env.NODE_ENV = "test"
-         sh 'yarn test'
-
+         sh 'yarn ci-test'
+         junit 'test/test-reports.xml'
        }
 
        stage('Link'){
@@ -34,7 +34,7 @@ node('node') {
        }
 
        stage('Archive'){
-         archiveArtifacts 'build/*'
+         archiveArtifacts 'build/*', onlyIfSuccessful: true
        }
 
        stage('Cleanup'){
