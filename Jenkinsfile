@@ -9,8 +9,10 @@ pipeline {
 
         stage('Initialize') {
           steps {
-            def node = tool name: 'Node-8.4.0', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-            env.PATH = "${node}/bin:${env.PATH}"
+            script {
+              def node = tool name: 'Node-8.4.0', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+              env.PATH = "${node}/bin:${env.PATH}"
+            }
             sh 'node -v'
             sh 'yarn install'
           }
