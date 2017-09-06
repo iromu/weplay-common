@@ -15,7 +15,6 @@ class Server {
       this.createRestServer(statusPort)
     }
 
-    logger.debug('[%s] DiscoveryServer constructor starting on port %s', options.name, options.port)
     const sio = require('socket.io')
     this.io = sio({
       pingInterval: 2000,
@@ -76,6 +75,7 @@ class Server {
       }
     })
     this.io.listen(port)
+    logger.info('[%s] Discovery Server listening at port %s', options.name, options.port)
     if (cb) {
       cb()
     }
@@ -140,7 +140,7 @@ class Server {
     server.head('/csv', csvHandler.bind(this))
 
     server.listen(statusPort, () => {
-      logger.info('Restify [%s] listening at %s', server.name, server.url)
+      logger.info('[%s] Discovery Status listening at %s', server.name, server.url)
     })
   }
 

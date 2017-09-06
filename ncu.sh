@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+ncu -u --loglevel verbose --packageFile package.json
 
 cd ../gameboy
 ncu -u --loglevel verbose --packageFile package.json

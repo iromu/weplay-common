@@ -5,10 +5,10 @@
   "jsnext:main": "src/index.js",
   "description": "",
   "dependencies": {
-    "debug": "2.6.8",
+    "debug": "3.0.1",
     "forwarded-for": "1.0.1",
     "fps": "0.0.3",
-    "redis": "2.7.1",
+    "redis": "2.8.0",
     "restify": "^5.0.1",
     "socket.io": "^2.0.3",
     "socket.io-redis": "^5.1.0",
@@ -21,7 +21,7 @@
     "babel-eslint": "^7.2.3",
     "babel-preset-env": "^1.6.0",
     "babel-register": "^6.26.0",
-    "chai": "4.1.0",
+    "chai": "4.1.1",
     "es6-plato": "^1.0.14",
     "eslint": "^4.3.0",
     "eslint-config-standard": "^10.2.1",
@@ -32,14 +32,15 @@
     "eslint-plugin-standard": "^3.0.1",
     "istanbul": "0.4.5",
     "mocha": "3.5.0",
-    "sinon": "2.4.1",
-    "sinon-chai": "2.12.0"
+    "sinon": "3.2.1",
+    "sinon-chai": "2.13.0"
   },
   "scripts": {
-    "lint": "eslint report/lint src",
+    "lint": "eslint src",
     "plato": "es6-plato -r -d report/plato src",
     "test": "NODE_ENV=test istanbul cover mocha -- --compilers js:babel-register",
     "tdd:mac": "NODE_ENV=test ./node_modules/.bin/mocha -w",
+    "build:watch": "babel -w src -d build",
     "build": "babel src -d build",
     "prepublish": "npm run build"
   },
