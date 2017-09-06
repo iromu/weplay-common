@@ -37,6 +37,14 @@ pipeline {
          steps {
             sh 'yarn pack'
             archiveArtifacts '*.tgz'
+            publishHTML (target: [
+                  allowMissing: false,
+                  alwaysLinkToLastBuild: false,
+                  keepAll: true,
+                  reportDir: 'coverage/lcov-report',
+                  reportFiles: 'index.html',
+                  reportName: "Coverage Report"
+                ])
          }
        }
 
