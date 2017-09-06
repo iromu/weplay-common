@@ -1,7 +1,7 @@
-node('node') {
-    currentBuild.result = "SUCCESS"
+pipeline {
+    agent any
 
-    try {
+    stages  {
 
        stage('Checkout'){
           checkout scm
@@ -38,9 +38,4 @@ node('node') {
        }
 
     }
-    catch (err) {
-        currentBuild.result = "FAILURE"
-        throw err
-    }
-
 }
