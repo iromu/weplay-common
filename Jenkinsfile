@@ -33,6 +33,10 @@ node('node') {
          sh 'yarn link'
        }
 
+       stage('Archive'){
+         archiveArtifacts 'build/*'
+       }
+
        stage('Cleanup'){
          echo 'prune and cleanup'
          sh 'rm node_modules -rf'
