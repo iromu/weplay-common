@@ -38,7 +38,7 @@ pipeline {
                   alwaysLinkToLastBuild: false,
                   keepAll: true,
                   reportDir: 'report/plato',
-                  reportFiles: 'index.html',
+                  reportFiles: '*',
                   reportName: "Plato Report"
                 ])
          }
