@@ -31,6 +31,7 @@
     "eslint-plugin-react": "^7.0.1",
     "eslint-plugin-standard": "^3.0.1",
     "istanbul": "0.4.5",
+    "jenkins-mocha": "^5.0.0",
     "mocha": "3.5.0",
     "sinon": "3.2.1",
     "sinon-chai": "2.13.0"
@@ -39,7 +40,7 @@
     "lint": "eslint src",
     "plato": "es6-plato -r -d report/plato src",
     "test": "NODE_ENV=test istanbul cover mocha -- --compilers js:babel-register",
-    "ci-test": "mocha --compilers js:babel-register -R xunit test/*.js > test/test-reports.xml",
+    "ci-test": "jenkins-mocha --compilers js:babel-register --cobertura test/*",
     "tdd:mac": "NODE_ENV=test ./node_modules/.bin/mocha -w",
     "build:watch": "babel -w src -d build",
     "build": "babel src -d build",

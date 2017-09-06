@@ -25,7 +25,7 @@ node('node') {
        stage('Test'){
          env.NODE_ENV = "test"
          sh 'yarn ci-test'
-         junit 'test/test-reports.xml'
+         junit 'artifacts/test/xunit.xml'
        }
 
        stage('Link'){
@@ -38,9 +38,7 @@ node('node') {
        }
 
        stage('Cleanup'){
-         echo 'prune and cleanup'
-         sh 'rm node_modules -rf'
-         sh 'rm build -rf'
+         cleanWs()
        }
 
     }
