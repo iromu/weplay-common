@@ -33,14 +33,7 @@ pipeline {
             sh 'yarn link'
             sh 'yarn pack'
             archiveArtifacts '*.tgz'
-            publishHTML (target: [
-                  allowMissing: false,
-                  alwaysLinkToLastBuild: false,
-                  keepAll: true,
-                  reportDir: 'report/plato',
-                  reportFiles: '*',
-                  reportName: "Plato Report"
-                ])
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: true, reportDir: 'report/plato', reportFiles: 'index.html', reportName: 'Plato Report', reportTitles: ''])
          }
        }
 
