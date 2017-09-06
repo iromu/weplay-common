@@ -34,7 +34,8 @@ node('node') {
        }
 
        stage('Archive'){
-         archiveArtifacts 'build/*', onlyIfSuccessful: true
+         sh 'yarn pack'
+         archiveArtifacts '*.tgz', onlyIfSuccessful: true
        }
 
        stage('Cleanup'){

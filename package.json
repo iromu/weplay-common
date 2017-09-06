@@ -40,7 +40,7 @@
     "lint": "eslint src",
     "plato": "es6-plato -r -d report/plato src",
     "test": "NODE_ENV=test istanbul cover mocha -- --compilers js:babel-register",
-    "ci-test": "jenkins-mocha --compilers js:babel-register --cobertura test/*",
+    "ci-test": "jenkins-mocha --compilers js:babel-register --cobertura test/*.spec.js",
     "tdd:mac": "NODE_ENV=test ./node_modules/.bin/mocha -w",
     "build:watch": "babel -w src -d build",
     "build": "babel src -d build",
