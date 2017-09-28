@@ -7,7 +7,7 @@ RUN npm -g i yarn
 RUN mkdir -p /usr/src/app/common
 WORKDIR /usr/src/app/common
 
-COPY . .
+COPY ../ .
 
 RUN yarn
 RUN yarn link
