@@ -1,9 +1,11 @@
 pipeline {
-    agent any
+    agent none
 
     stages  {
 
         stage('Initialize') {
+          agent { label 'node'  }
+
           steps {
             script {
               def node = tool name: 'Node-8.4.0', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
@@ -15,12 +17,15 @@ pipeline {
         }
 
        stage('Build'){
+         agent { label 'node'  }
+
          steps {
             sh 'yarn build'
          }
        }
 
        stage('Test'){
+         agent { label 'node'  }
          steps {
             sh 'yarn plato'
             sh 'jenkins-mocha --compilers js:babel-register --cobertura test/*.spec.js'
@@ -29,6 +34,7 @@ pipeline {
        }
 
        stage('Archive'){
+         agent { label 'node'  }
          steps {
             sh 'yarn pack'
             archiveArtifacts '*.tgz'
@@ -36,7 +42,23 @@ pipeline {
          }
        }
 
+       stage('Docker Build arm'){
+         agent { label 'arm'  }
+         steps {
+             sh 'docker build --no-cache -t iromu/weplay-common-arm:latest . -f Dockerfile_arm'
+         }
+       }
+
+       stage('Docker Push arm'){
+         agent { label 'arm'  }
+         steps {
+             sh 'docker push iromu/weplay-common-arm:latest'
+         }
+       }
+
        stage('Cleanup'){
+         agent any
+
          steps {
             cleanWs()
          }
