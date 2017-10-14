@@ -36,23 +36,21 @@ pipeline {
          }
        }
 
-      stage('Docker') {
-        steps {
-          parallel(
-                docker: {
-                   agent { label 'docker'  }
-                   sh 'docker build --no-cache -t iromu/weplay-common:latest . -f Dockerfile'
-                   sh 'docker push iromu/weplay-common:latest'
+       stage('Docker arm'){
+         agent { label 'arm'  }
+         steps {
+             sh 'docker build --no-cache -t iromu/weplay-common-arm:latest . -f Dockerfile_arm'
+             sh 'docker push iromu/weplay-common-arm:latest'
+         }
+       }
 
-                },
-                arm: {
-                  agent { label 'arm'  }
-                  sh 'docker build --no-cache -t iromu/weplay-common-arm:latest . -f Dockerfile_arm'
-                  sh 'docker push iromu/weplay-common-arm:latest'
-                }
-              )
-          }
+      stage('Docker amd64'){
+        agent { label 'docker'  }
+        steps {
+            sh 'docker build --no-cache -t iromu/weplay-common:latest . -f Dockerfile'
+            sh 'docker push iromu/weplay-common:latest'
         }
+      }
 
        stage('Cleanup'){
          agent any
