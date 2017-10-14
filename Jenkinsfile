@@ -33,6 +33,13 @@ pipeline {
          }
        }
 
+      stage('Publish'){
+        agent { label 'node'  }
+        steps {
+           sh 'yarn publish'
+        }
+      }
+
        stage('Archive'){
          agent { label 'node'  }
          steps {
