@@ -33,13 +33,6 @@ pipeline {
          }
        }
 
-      stage('Publish'){
-        agent { label 'node'  }
-        steps {
-           sh 'yarn publish --tag latest'
-        }
-      }
-
        stage('Archive'){
          agent { label 'node'  }
          steps {
