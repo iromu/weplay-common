@@ -42,16 +42,10 @@ pipeline {
          }
        }
 
-       stage('Docker Build arm'){
+       stage('Docker arm'){
          agent { label 'arm'  }
          steps {
              sh 'docker build --no-cache -t iromu/weplay-common-arm:latest . -f Dockerfile_arm'
-         }
-       }
-
-       stage('Docker Push arm'){
-         agent { label 'arm'  }
-         steps {
              sh 'docker push iromu/weplay-common-arm:latest'
          }
        }
