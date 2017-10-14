@@ -36,7 +36,7 @@ pipeline {
       stage('Publish'){
         agent { label 'node'  }
         steps {
-           sh 'yarn publish'
+           sh 'yarn publish --tag latest'
         }
       }
 
