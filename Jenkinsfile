@@ -44,6 +44,14 @@ pipeline {
          }
        }
 
+      stage('Docker amd64'){
+        agent { label 'docker'  }
+        steps {
+            sh 'docker build --no-cache -t iromu/weplay-common:latest . -f Dockerfile'
+            sh 'docker push iromu/weplay-common:latest'
+        }
+      }
+
        stage('Cleanup'){
          agent any
 
