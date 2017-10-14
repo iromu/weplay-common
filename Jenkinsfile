@@ -40,11 +40,13 @@ pipeline {
         steps {
           parallel(
                 docker: {
+                   agent 'docker'
                    sh 'docker build --no-cache -t iromu/weplay-common:latest . -f Dockerfile'
                    sh 'docker push iromu/weplay-common:latest'
 
                 },
                 arm: {
+                  agent 'arm'
                   sh 'docker build --no-cache -t iromu/weplay-common-arm:latest . -f Dockerfile_arm'
                   sh 'docker push iromu/weplay-common-arm:latest'
                 }
