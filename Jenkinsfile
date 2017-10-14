@@ -1,11 +1,9 @@
 pipeline {
-    agent none
+    agent any
 
     stages  {
 
         stage('Initialize') {
-          agent { label 'node'  }
-
           steps {
             script {
               def node = tool name: 'Node-8.4.0', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
@@ -17,15 +15,12 @@ pipeline {
         }
 
        stage('Build'){
-         agent { label 'node'  }
-
          steps {
             sh 'yarn build'
          }
        }
 
        stage('Test'){
-         agent { label 'node'  }
          steps {
             sh 'yarn plato'
             sh 'jenkins-mocha --compilers js:babel-register --cobertura test/*.spec.js'
@@ -34,7 +29,6 @@ pipeline {
        }
 
        stage('Archive'){
-         agent { label 'node'  }
          steps {
             sh 'yarn pack'
             archiveArtifacts '*.tgz'
