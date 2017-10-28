@@ -117,7 +117,7 @@ class DiscoveryServerListeners {
       event: request.event,
       by: requester.name
     })
-    logger.info('[%s] DiscoveryServer.onDiscover', this.options.name, {request, by: requester.id})
+    // logger.info('[%s] DiscoveryServer.onDiscover', this.options.name, {request, by: requester.id})
     if (!requester.depends) {
       requester.depends = []
     }
