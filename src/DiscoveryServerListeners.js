@@ -55,7 +55,7 @@ class DiscoveryServerListeners {
     const eventData = {name: _service.name, event: _service.event, room: _service.room, id: _service.id}
     eventData.room || delete eventData.room
 
-    logger.debug('[%s] DiscoveryServer.onAnnounce', this.options.name, eventData)
+    // logger.debug('[%s] DiscoveryServer.onAnnounce', this.options.name, eventData)
     const discovered = this._services.filter(s => s.id === _service.id)[0]
 
     if (!discovered) {

@@ -83,7 +83,7 @@ var DiscoveryServerListeners = function () {
       var eventData = { name: _service.name, event: _service.event, room: _service.room, id: _service.id };
       eventData.room || delete eventData.room;
 
-      logger.debug('[%s] DiscoveryServer.onAnnounce', this.options.name, eventData);
+      // logger.debug('[%s] DiscoveryServer.onAnnounce', this.options.name, eventData)
       var discovered = this._services.filter(function (s) {
         return s.id === _service.id;
       })[0];
