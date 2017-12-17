@@ -250,54 +250,54 @@ describe('Discovery', () => {
       })
     })
 
-    xit('should start a stream when a emitter connects', (done) => {
-      channel = 'emitterRec2'
-      room = 'roomRec2'
-      event = 'eventRec2'
-      let i = 0
-      let checkTest = (data) => {
-        expect(data).to.be.equal(`data J${i++}`)
-        done()
-      }
-      let worker
-      worker = busFactory({
-        name: 'worker',
-        id: 'worker',
-        clientListeners: [
-          {
-            name: channel,
-            event: 'connect',
-            handler: () => {
-              worker.streamJoin(channel, room, event, checkTest)
-            }
-          },
-          {
-            name: channel,
-            event: 'disconnect',
-            handler: () => {
-              // worker.streamLeave(channel, room)
-            }
-          }
-        ]
-      }, () => {
-        worker.streamJoin(channel, room, event, checkTest)
-        let emitter = busFactory({
-          name: channel,
-          id: channel,
-          serverListeners: {
-            'streamJoinRequested': (socket, request) => {
-              socket.join(request)
-              emitter.stream(request, event, `data J${i++}`)
-            },
-            'streamCreateRequested': (socket, request) => {
-              socket.join(request)
-              emitter.stream(request, event, 'data C')
-            }
-          }
-        }, () => {
-          emitter.stream(room, event, 'data I')
-        })
-      })
-    })
+    // xit('should start a stream when a emitter connects', (done) => {
+    //   channel = 'emitterRec2'
+    //   room = 'roomRec2'
+    //   event = 'eventRec2'
+    //   let i = 0
+    //   let checkTest = (data) => {
+    //     expect(data).to.be.equal(`data J${i++}`)
+    //     done()
+    //   }
+    //   let worker
+    //   worker = busFactory({
+    //     name: 'worker',
+    //     id: 'worker',
+    //     clientListeners: [
+    //       {
+    //         name: channel,
+    //         event: 'connect',
+    //         handler: () => {
+    //           worker.streamJoin(channel, room, event, checkTest)
+    //         }
+    //       },
+    //       {
+    //         name: channel,
+    //         event: 'disconnect',
+    //         handler: () => {
+    //           // worker.streamLeave(channel, room)
+    //         }
+    //       }
+    //     ]
+    //   }, () => {
+    //     worker.streamJoin(channel, room, event, checkTest)
+    //     let emitter = busFactory({
+    //       name: channel,
+    //       id: channel,
+    //       serverListeners: {
+    //         'streamJoinRequested': (socket, request) => {
+    //           socket.join(request)
+    //           emitter.stream(request, event, `data J${i++}`)
+    //         },
+    //         'streamCreateRequested': (socket, request) => {
+    //           socket.join(request)
+    //           emitter.stream(request, event, 'data C')
+    //         }
+    //       }
+    //     }, () => {
+    //       emitter.stream(room, event, 'data I')
+    //     })
+    //   })
+    // })
   })
 })

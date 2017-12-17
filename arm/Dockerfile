@@ -1,4 +1,4 @@
-FROM arm32v7/node:8
+FROM arm32v7/node:9
 
 # Install app dependencies
 RUN npm -g i yarn
