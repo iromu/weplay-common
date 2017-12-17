@@ -1,7 +1,8 @@
-FROM arm32v7/node:8
+FROM arm32v7/node:9
 
 # Install app dependencies
-RUN npm -g i yarn
+RUN apt-get update
+RUN apt-get install yarn
 
 # Create app directory
 RUN mkdir -p /usr/src/app/common
