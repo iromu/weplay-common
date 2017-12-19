@@ -1,5 +1,5 @@
 require('./common.spec')
-import DiscoveryServerListeners from '../src/DiscoveryServerListeners'
+import DiscoveryServerListeners from '../main/DiscoveryServerListeners'
 
 describe('DiscoveryServerListeners', () => {
   describe('register', () => {

@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 require('./common.spec')
-import LoggerFactory from '../src/LoggerFactory'
+import LoggerFactory from '../main/LoggerFactory'
 
 const TestString = 'Test String'
 

@@ -1,7 +1,7 @@
 import ports from './common.spec'
 import uuidv1 from 'uuid/v1'
-import EventBus from '../src/eventbus'
-import Discovery from '../src/discovery'
+import EventBus from '../main/eventbus'
+import Discovery from '../main/discovery'
 
 process.env.NODE_ENV = 'test'
 
